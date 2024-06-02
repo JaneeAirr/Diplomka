@@ -1,5 +1,6 @@
 import Dashboard from "layouts/dashboard";
-import Tables from "layouts/tables";
+import Tables from "layouts/Tables_admin";
+import TablesGroup from "layouts/Tables_group_admin";
 import Billing from "layouts/Billing_admin";
 import BillingAdmin from "layouts/Billing_admin";
 import RTL from "layouts/rtl";
@@ -15,7 +16,9 @@ import { BsFillPersonFill } from "react-icons/bs";
 import { IoBuild } from "react-icons/io5";
 import { BsCreditCardFill } from "react-icons/bs";
 import { IoStatsChart } from "react-icons/io5";
+import { PiStudent } from "react-icons/pi";
 import { IoHome } from "react-icons/io5";
+import { SiGoogleclassroom } from "react-icons/si";
 import { PiChalkboardTeacherBold } from "react-icons/pi";
 // Admin routes
 export const adminRoutes = [
@@ -37,6 +40,25 @@ export const adminRoutes = [
     component: Billing,
     noCollapse: true,
   },
+  {
+    type: "collapse",
+    name: "Студенты",
+    key: "admin-tables",
+    route: "/admin/tables",
+    icon: <PiStudent size="15px" color="inherit" />, // Billing icon
+    component: Tables,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Группы",
+    key: "admin-tables-group",
+    route: "/admin/tables-group",
+    icon: <SiGoogleclassroom size="15px" color="inherit" />, // Billing icon
+    component:   TablesGroup,
+    noCollapse: true,
+  },
+
   // other admin routes...
 ];
 
@@ -71,7 +93,7 @@ export const studentRoutes = [
     key: "student-dashboard",
     route: "/student/dashboard",
     icon: <IoHome size="15px" color="inherit" />, // Home icon
-    component: DashboardStudent,
+    component: Tables,
     noCollapse: true,
   },
   // other student routes...

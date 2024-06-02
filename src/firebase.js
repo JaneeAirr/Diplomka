@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// Вставьте ваш конфиг firebaseConfig здесь
+// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAKgHBRrMuxnXtleIe34-EeT22oRDzK8H0",
   authDomain: "diplomprojectfinalversion.firebaseapp.com",
@@ -12,11 +12,10 @@ const firebaseConfig = {
   measurementId: "G-F9MV1NXBK5"
 };
 
-// Инициализация Firebase приложения
+// Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 
-// Получение ссылки на Firestore базу данных
+// Initialize Firestore
 const db = getFirestore(firebaseApp);
 
-// Экспортируйте db для дальнейшего использования в вашем проекте
 export default db;
