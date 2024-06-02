@@ -50,7 +50,8 @@ function SignIn() {
         const roleToCheck = userRole || "admin";
         console.log("Role to check:", roleToCheck);
 
-        // Сохранение роли пользователя в локальном хранилище
+        // Сохранение email и роли пользователя в локальном хранилище
+        localStorage.setItem("userEmail", user.email);
         localStorage.setItem("userRole", storedUserRole);
 
         // Проверка выбранной роли пользователя и перенаправление

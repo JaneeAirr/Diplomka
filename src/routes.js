@@ -1,6 +1,7 @@
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/Tables_admin";
 import TablesGroup from "layouts/Tables_group_admin";
+import TablesSubject from "layouts/Tables_subject";
 import Billing from "layouts/Billing_admin";
 import BillingAdmin from "layouts/Billing_admin";
 import RTL from "layouts/rtl";
@@ -20,6 +21,7 @@ import { PiStudent } from "react-icons/pi";
 import { IoHome } from "react-icons/io5";
 import { SiGoogleclassroom } from "react-icons/si";
 import { PiChalkboardTeacherBold } from "react-icons/pi";
+import { MdOutlinePlayLesson } from "react-icons/md";
 // Admin routes
 export const adminRoutes = [
   {
@@ -56,6 +58,15 @@ export const adminRoutes = [
     route: "/admin/tables-group",
     icon: <SiGoogleclassroom size="15px" color="inherit" />, // Billing icon
     component:   TablesGroup,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Предметы",
+    key: "admin-tables-subject",
+    route: "/admin/tables-subject",
+    icon: <MdOutlinePlayLesson size="15px" color="inherit" />, // Billing icon
+    component:   TablesSubject,
     noCollapse: true,
   },
 

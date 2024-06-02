@@ -81,8 +81,8 @@ function DashboardNavbar({ absolute, light, isMini }) {
       setTransparentNavbar(dispatch, (fixedNavbar && window.scrollY === 0) || !fixedNavbar);
     }
 
-    /** 
-     The event listener that's calling the handleTransparentNavbar function when 
+    /**
+     The event listener that's calling the handleTransparentNavbar function when
      scrolling the window.
     */
     window.addEventListener("scroll", handleTransparentNavbar);
@@ -150,40 +150,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
         </VuiBox>
         {isMini ? null : (
           <VuiBox sx={(theme) => navbarRow(theme, { isMini })}>
-            <VuiBox pr={1}>
-              <VuiInput
-                placeholder="Type here..."
-                icon={{ component: "search", direction: "left" }}
-                sx={({ breakpoints }) => ({
-                  [breakpoints.down("sm")]: {
-                    maxWidth: "80px",
-                  },
-                  [breakpoints.only("sm")]: {
-                    maxWidth: "80px",
-                  },
-                  backgroundColor: "info.main !important",
-                })}
-              />
-            </VuiBox>
             <VuiBox color={light ? "white" : "inherit"}>
-              <Link to="/authentication/sign-in">
-                <IconButton sx={navbarIconButton} size="small">
-                  <Icon
-                    sx={({ palette: { dark, white } }) => ({
-                      color: light ? white.main : dark.main,
-                    })}
-                  >
-                    account_circle
-                  </Icon>
-                  <VuiTypography
-                    variant="button"
-                    fontWeight="medium"
-                    color={light ? "white" : "dark"}
-                  >
-                    Sign in
-                  </VuiTypography>
-                </IconButton>
-              </Link>
               <IconButton
                 size="small"
                 color="inherit"
@@ -199,17 +166,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
                 onClick={handleConfiguratorOpen}
               >
                 <Icon>settings</Icon>
-              </IconButton>
-              <IconButton
-                size="small"
-                color="inherit"
-                sx={navbarIconButton}
-                aria-controls="notification-menu"
-                aria-haspopup="true"
-                variant="contained"
-                onClick={handleOpenMenu}
-              >
-                <Icon className={light ? "text-white" : "text-dark"}>notifications</Icon>
               </IconButton>
               {renderMenu()}
             </VuiBox>

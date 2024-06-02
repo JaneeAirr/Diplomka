@@ -16,6 +16,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import { styled } from "@mui/system";
+import MenuItem from "@mui/material/MenuItem"; // Добавляем компонент MenuItem для выпадающего списка
 
 // Custom styled components
 const CustomDialog = styled(Dialog)(({ theme }) => ({
@@ -141,18 +142,27 @@ function BillingInformation() {
   const [teachers, setTeachers] = useState([]);
   const [editTeacher, setEditTeacher] = useState(null);
   const [subject, setSubject] = useState("");
+  const [subjects, setSubjects] = useState([]); // Состояние для списка предметов
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const fetchTeachers = async () => {
       const usersCollection = collection(db, "users");
       const usersSnapshot = await getDocs(usersCollection);
-      const usersList = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const teachersList = usersList.filter(user => user.role === "teacher");
+      const usersList = usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const teachersList = usersList.filter((user) => user.role === "teacher");
       setTeachers(teachersList);
     };
 
+    const fetchSubjects = async () => {
+      const subjectsCollection = collection(db, "subjects");
+      const subjectsSnapshot = await getDocs(subjectsCollection);
+      const subjectsList = subjectsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setSubjects(subjectsList);
+    };
+
     fetchTeachers();
+    fetchSubjects();
   }, []);
 
   const handleEdit = (id) => {
@@ -199,27 +209,31 @@ function BillingInformation() {
         </VuiBox>
       </VuiBox>
       <CustomDialog open={open} onClose={handleClose}>
-        <CustomDialogTitle>Edit Subject for {editTeacher?.name}</CustomDialogTitle>
+        <CustomDialogTitle>Назначить предмет для {editTeacher?.name}</CustomDialogTitle>
         <CustomDialogContent>
           <CustomDialogContentText>
-            To edit the subject for {editTeacher?.name}, please enter the new subject here.
+            Чтобы назначить предмет для {editTeacher?.name}, выберите предмет из списка ниже.
           </CustomDialogContentText>
           <CustomTextField
-            autoFocus
-            margin="dense"
+            select
             label="Subject"
-            type="text"
-            fullWidth
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-          />
+            fullWidth
+          >
+            {subjects.map((subj) => (
+              <MenuItem key={subj.id} value={subj.name}>
+                {subj.name}
+              </MenuItem>
+            ))}
+          </CustomTextField>
         </CustomDialogContent>
         <CustomDialogActions>
           <VuiButton onClick={handleClose} color="secondary">
-            Cancel
+            Отмена
           </VuiButton>
           <VuiButton onClick={handleSave} color="primary">
-            Save
+            Сохранить
           </VuiButton>
         </CustomDialogActions>
       </CustomDialog>

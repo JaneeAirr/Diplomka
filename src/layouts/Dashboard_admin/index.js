@@ -30,6 +30,7 @@ function Dashboard() {
 
   const [teacherCount, setTeacherCount] = useState(0);
   const [studentCount, setStudentCount] = useState(0); // State for student count
+  const [subjectCount, setSubjectCount] = useState(0); // State for subject count
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
@@ -46,6 +47,12 @@ function Dashboard() {
       const querySnapshot = await getDocs(q);
       const studentsList = querySnapshot.docs.map((doc) => doc.data());
       setStudentCount(studentsList.length);
+    };
+
+    const fetchSubjects = async () => {
+      const subjectsCollection = collection(db, "subjects");
+      const subjectsSnapshot = await getDocs(subjectsCollection);
+      setSubjectCount(subjectsSnapshot.size); // Set the count of subjects
     };
 
     const fetchUserData = async () => {
@@ -69,6 +76,7 @@ function Dashboard() {
 
     fetchTeachers();
     fetchStudents();
+    fetchSubjects(); // Fetch subjects count
     fetchUserData();
   }, []);
 
@@ -102,7 +110,7 @@ function Dashboard() {
               <Grid item xs={12} md={4} xl={4}>
                 <MiniStatisticsCard
                   title={{ text: "Количество предметов" }}
-                  count="50"
+                  count={subjectCount}
                   icon={{
                     color: "info",
                     component: <img src={SubjectIcon} alt="Subject Icon" style={{ width: "20px", height: "20px" }} />,
