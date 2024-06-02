@@ -6,7 +6,9 @@ import TablesSheld from "layouts/TableSheildu";
 import TablesRooms from "layouts/Tables_Rooms";
 import Billing from "layouts/Billing_admin";
 import LogAut from "layouts/authentication/Logout"
+import TeacherAden from "layouts/Table_Adden"
 import BillingAdmin from "layouts/Billing_admin";
+import { FaUserXmark } from "react-icons/fa6";
 import RTL from "layouts/rtl";
 import Profile from "layouts/profile";
 import { MdFlightClass } from "react-icons/md";
@@ -114,6 +116,15 @@ export const teacherRoutes = [
     route: "/teacher/sheuid",
     icon: <IoHome size="15px" color="inherit" />, // Billing icon
     component: TablesSheld,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Посещаемость",
+    key: "teacher-adden",
+    route: "/teacher/adden",
+    icon: <FaUserXmark size="15px" color="inherit" />, // Billing icon
+    component: TeacherAden,
     noCollapse: true,
   },
   {

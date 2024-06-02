@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
 import db from "../../firebase";
 import { Button, TextField, MenuItem, Box, FormControl, InputLabel, Select } from "@mui/material";
 
-const ScheduleForm = ({ userEmail }) => {
+const ScheduleForm = ({ userEmail, editMode, currentClass, onClose }) => {
   const [groups, setGroups] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [subject, setSubject] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState("");
-  const [selectedRoom, setSelectedRoom] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState(currentClass ? currentClass.groupId : "");
+  const [selectedRoom, setSelectedRoom] = useState(currentClass ? currentClass.roomId : "");
+  const [startTime, setStartTime] = useState(currentClass ? currentClass.startTime : "");
+  const [endTime, setEndTime] = useState(currentClass ? currentClass.endTime : "");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -35,12 +35,10 @@ const ScheduleForm = ({ userEmail }) => {
         return;
       }
 
-      console.log("Fetching subject for userEmail:", userEmail); // Debugging log
       const q = query(collection(db, "users"), where("email", "==", userEmail));
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data();
-        console.log("User data:", userData); // Debugging log
         setSubject(userData.subject);
       } else {
         console.error("No user found with the provided email.");
@@ -74,15 +72,28 @@ const ScheduleForm = ({ userEmail }) => {
     }
 
     try {
-      await addDoc(classesCollection, {
-        groupId: selectedGroup,
-        roomId: selectedRoom,
-        subject,
-        startTime,
-        endTime,
-      });
+      if (editMode) {
+        const classDoc = doc(db, "classes", currentClass.id);
+        await updateDoc(classDoc, {
+          groupId: selectedGroup,
+          roomId: selectedRoom,
+          subject,
+          startTime,
+          endTime,
+        });
+      } else {
+        await addDoc(classesCollection, {
+          groupId: selectedGroup,
+          roomId: selectedRoom,
+          subject,
+          startTime,
+          endTime,
+          userEmail,
+        });
+      }
       setError("");
       alert("Class scheduled successfully");
+      onClose();
     } catch (error) {
       setError("Error scheduling class: " + error.message);
     }
@@ -138,7 +149,7 @@ const ScheduleForm = ({ userEmail }) => {
       />
       {error && <Box color="red">{error}</Box>}
       <Button type="submit" variant="contained" color="primary">
-        Schedule Class
+        {editMode ? "Update Class" : "Schedule Class"}
       </Button>
     </Box>
   );

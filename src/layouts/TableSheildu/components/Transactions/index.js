@@ -1,12 +1,13 @@
-// src/layouts/dashboard/components/ScheduleTable.js
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import db from "../../../../firebase";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Card } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Card, IconButton } from "@mui/material";
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const ScheduleTable = () => {
+const ScheduleTable = ({ userEmail, onEdit }) => {
   const [classes, setClasses] = useState([]);
   const [groups, setGroups] = useState({});
   const [rooms, setRooms] = useState({});
@@ -44,6 +45,11 @@ const ScheduleTable = () => {
     fetchRooms();
   }, []);
 
+  const handleDelete = async (classId) => {
+    await deleteDoc(doc(db, "classes", classId));
+    setClasses(classes.filter(classItem => classItem.id !== classId));
+  };
+
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
   const classesByDay = (day) => {
@@ -72,6 +78,7 @@ const ScheduleTable = () => {
                   <TableCell sx={{ color: "white" }}>Subject</TableCell>
                   <TableCell sx={{ color: "white" }}>Start Time</TableCell>
                   <TableCell sx={{ color: "white" }}>End Time</TableCell>
+                  <TableCell sx={{ color: "white" }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -82,6 +89,18 @@ const ScheduleTable = () => {
                     <TableCell sx={{ color: "white" }}>{classItem.subject}</TableCell>
                     <TableCell sx={{ color: "white" }}>{new Date(classItem.startTime).toLocaleString()}</TableCell>
                     <TableCell sx={{ color: "white" }}>{new Date(classItem.endTime).toLocaleString()}</TableCell>
+                    <TableCell sx={{ color: "white" }}>
+                      {classItem.userEmail === userEmail && (
+                        <>
+                          <IconButton onClick={() => onEdit(classItem)} color="primary">
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton onClick={() => handleDelete(classItem.id)} color="secondary">
+                            <DeleteIcon />
+                          </IconButton>
+                        </>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

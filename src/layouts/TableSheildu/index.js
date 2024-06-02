@@ -10,6 +10,9 @@ import VuiButton from "components/VuiButton";
 
 const SchedulePage = () => {
   const [userEmail, setUserEmail] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [currentClass, setCurrentClass] = useState(null);
 
   useEffect(() => {
     const email = localStorage.getItem("userEmail");
@@ -18,11 +21,18 @@ const SchedulePage = () => {
     }
   }, []);
 
-  const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setEditMode(false);
+    setCurrentClass(null);
+  };
 
-  console.log("SchedulePage userEmail:", userEmail); // Debugging log
+  const handleEdit = (classItem) => {
+    setCurrentClass(classItem);
+    setEditMode(true);
+    setOpen(true);
+  };
 
   return (
     <DashboardLayout>
@@ -31,7 +41,7 @@ const SchedulePage = () => {
         <VuiBox mb={1.5}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <ScheduleTable userEmail={userEmail} />
+              <ScheduleTable userEmail={userEmail} onEdit={handleEdit} />
             </Grid>
           </Grid>
         </VuiBox>
@@ -41,7 +51,12 @@ const SchedulePage = () => {
           </VuiButton>
           <Modal open={open} onClose={handleClose}>
             <Box sx={{ ...modalStyle }}>
-              <ScheduleForm userEmail={userEmail} />
+              <ScheduleForm
+                userEmail={userEmail}
+                editMode={editMode}
+                currentClass={currentClass}
+                onClose={handleClose}
+              />
             </Box>
           </Modal>
         </VuiBox>
