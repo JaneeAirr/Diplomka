@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { collection, getDocs, doc, deleteDoc, query, where } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc, getDoc, query, where } from "firebase/firestore";
 import db from "../../../firebase"; // Ensure this path is correct
 
 // Vision UI Dashboard React components
@@ -15,7 +15,7 @@ function Author({ image, name }) {
   return (
     <VuiBox display="flex" alignItems="center" px={1} py={0.5}>
       <VuiBox mr={2}>
-        <VuiAvatar src={image} alt={name} size="sm" variant="rounded" />
+        <img src={image} alt={name} width="40" height="40" />
       </VuiBox>
       <VuiBox display="flex" flexDirection="column">
         <VuiTypography variant="button" color="white" fontWeight="medium">
@@ -37,35 +37,54 @@ export default function useAuthorsTableData() {
 
       console.log("Fetched students:", studentsList); // Debugging log
 
-      const studentRows = studentsList.map(student => ({
-        id: student.id,
-        name: (
-          <VuiTypography variant="button" color="white" fontWeight="medium">
-            {student.name}
-          </VuiTypography>
-        ),
-        email: (
-          <VuiTypography variant="caption" color="text">
-            {student.email}
-          </VuiTypography>
-        ),
-        group: "N/A", // Placeholder for group
-        registered: (
-          <VuiTypography variant="caption" color="white" fontWeight="medium">
-            {/* Assuming 'registered' is a Firestore timestamp */}
-            {student.registered ? new Date(student.registered.seconds * 1000).toLocaleDateString() : "N/A"}
-          </VuiTypography>
-        ),
-        action: (
-          <VuiButton
-            variant="outlined"
-            color="error"
-            onClick={() => handleDelete(student.id)}
-          >
-            Delete
-          </VuiButton>
-        ),
-        hasBorder: true
+      // Fetch group information for each student
+      const studentRows = await Promise.all(studentsList.map(async (student) => {
+        let groupName = "N/A";
+        if (student.group) {
+          try {
+            const groupDocRef = doc(db, "groups", student.group);
+            const groupDoc = await getDoc(groupDocRef);
+            if (groupDoc.exists()) {
+              groupName = groupDoc.data().name || "N/A";
+            }
+          } catch (error) {
+            console.error("Error fetching group data:", error);
+          }
+        }
+
+        return {
+          id: student.id,
+          name: (
+            <VuiTypography variant="button" color="white" fontWeight="medium">
+              {student.name}
+            </VuiTypography>
+          ),
+          email: (
+            <VuiTypography variant="caption" color="text">
+              {student.email}
+            </VuiTypography>
+          ),
+          group: (
+            <VuiTypography variant="caption" color="text">
+              {groupName}
+            </VuiTypography>
+          ),
+          registered: (
+            <VuiTypography variant="caption" color="white" fontWeight="medium">
+              {student.registered ? new Date(student.registered.seconds * 1000).toLocaleDateString() : "N/A"}
+            </VuiTypography>
+          ),
+          action: (
+            <VuiButton
+              variant="outlined"
+              color="error"
+              onClick={() => handleDelete(student.id)}
+            >
+              Delete
+            </VuiButton>
+          ),
+          hasBorder: true
+        };
       }));
 
       setRows(studentRows);
