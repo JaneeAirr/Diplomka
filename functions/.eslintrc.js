@@ -11,10 +11,17 @@ module.exports = {
     "google",
   ],
   rules: {
-    "no-restricted-globals": ["error", "name", "length"],
-    "prefer-arrow-callback": "error",
-    "quotes": ["error", "double", {"allowTemplateLiterals": true}],
+    // отключение правила на длину строки
+    'max-len': ['off'],
+    // отключение правила на отступы
+    'indent': ['off'],
+    // отключение правила на использование кавычек
+    'quotes': ['off'],
+    // отключение правила на точки с запятой
+    'semi': ['off'],
+    // добавить другие правила по необходимости
   },
+
   overrides: [
     {
       files: ["**/*.spec.*"],

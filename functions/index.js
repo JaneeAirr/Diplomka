@@ -1,19 +1,36 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+admin.initializeApp();
 
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
+const db = admin.firestore();
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+exports.scheduledFunction = functions.pubsub
+  .schedule("every 5 minutes")
+  .onRun(async (context) => {
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60000);
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+    const classesRef = db.collection("classes");
+    const snapshot = await classesRef
+      .where("endTime", "<=", fiveMinutesAgo.toISOString())
+      .get();
+
+    if (snapshot.empty) {
+      console.log("No matching documents.");
+      return null;
+    }
+
+    snapshot.forEach((doc) => {
+      console.log("Deleting class:", doc.id, " - ", doc.data().subject);
+      doc.ref
+        .delete()
+        .then(() => {
+          console.log("Document successfully deleted!");
+        })
+        .catch((error) => {
+          console.error("Error removing document: ", error);
+        });
+    });
+
+    return null;
+  });
