@@ -25,20 +25,19 @@ import VuiBox from "components/VuiBox";
 // Vision UI Dashboard React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
 
 // Billing page components
-import Invoices from "layouts/Tables_subject/components/Invoices";
+import Transactions from "layouts/TableSheildu/components/Transactions";
 
 function Billing() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <VuiBox mt={4}>
-        <VuiBox mb={1.5}>
+        <VuiBox my={3}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Invoices />
+              <Transactions />
             </Grid>
           </Grid>
         </VuiBox>

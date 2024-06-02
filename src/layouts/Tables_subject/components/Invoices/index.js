@@ -1,54 +1,91 @@
-/*!
-
-=========================================================
-* Vision UI Free React - v1.0.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/vision-ui-free-react
-* Copyright 2021 Creative Tim (https://www.creative-tim.com/)
-* Licensed under MIT (https://github.com/creativetimofficial/vision-ui-free-react/blob/master LICENSE.md)
-
-* Design and Coded by Simmmple & Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
-// @mui material components
-import Card from "@mui/material/Card";
-
-// Vision UI Dashboard React components
+import React, { useState, useEffect, useCallback } from "react";
+import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import db from "../../../../firebase";
+import Grid from "@mui/material/Grid";
+import { Card, Button, IconButton } from "@mui/material";
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
-import VuiButton from "components/VuiButton";
+import Table from "examples/Tables/Table";
+import AddSubjectModal from "../../../Tables_subject/AddSubjectModal";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-// Billing page components
-import Invoice from "layouts/billing/components/Invoice";
+const useSubjectsTableData = () => {
+  const [rows, setRows] = useState([]);
 
-function Invoices() {
-  return (
-    <Card id="delete-account" sx={{ height: "100%" }}>
-      <VuiBox mb="28px" display="flex" justifyContent="space-between" alignItems="center">
-        <VuiTypography variant="h6" fontWeight="medium" color="white">
-          Invoices
+  const fetchSubjects = useCallback(async () => {
+    const subjectsSnapshot = await getDocs(collection(db, "subjects"));
+    const subjectsList = subjectsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    const subjectsRows = subjectsList.map((subject) => ({
+      name: (
+        <VuiTypography variant="button" color="white" fontWeight="medium">
+          {subject.name}
         </VuiTypography>
-        <VuiButton variant="contained" color="info" size="small">
-          VIEW ALL
-        </VuiButton>
-      </VuiBox>
-      <VuiBox>
-        <VuiBox component="ul" display="flex" flexDirection="column" p={0} m={0}>
-          <Invoice date="March, 01, 2020" id="#MS-415646" price="$180" />
-          <Invoice date="February, 10, 2021" id="#RV-126749" price="$250" />
-          <Invoice date="April, 05, 2020" id="#QW-103578" price="$120" />
-          <Invoice date="June, 25, 2019" id="#MS-415646" price="$180" />
-          <Invoice date="March, 01, 2019" id="#AR-803481" price="$300" noGutter />
-        </VuiBox>
-      </VuiBox>
-    </Card>
-  );
-}
+      ),
+      action: (
+        <IconButton color="error" onClick={() => handleDeleteSubject(subject.id)}>
+          <DeleteIcon />
+        </IconButton>
+      ),
+      hasBorder: true,
+    }));
 
-export default Invoices;
+    setRows(subjectsRows);
+  }, []);
+
+  useEffect(() => {
+    fetchSubjects();
+  }, [fetchSubjects]);
+
+  const handleDeleteSubject = async (subjectId) => {
+    try {
+      await deleteDoc(doc(db, "subjects", subjectId));
+      fetchSubjects();
+    } catch (error) {
+      console.error("Error deleting subject:", error);
+    }
+  };
+
+  return {
+    columns: [
+      { name: "name", align: "left" },
+      { name: "action", align: "center" },
+    ],
+    rows,
+    fetchSubjects,
+  };
+};
+
+const SubjectsTable = () => {
+  const { columns, rows, fetchSubjects } = useSubjectsTableData();
+  const [addSubjectModalOpen, setAddSubjectModalOpen] = useState(false);
+
+  const handleAddSubject = () => {
+    setAddSubjectModalOpen(true);
+  };
+
+  return (
+    <VuiBox py={3}>
+      <Card>
+        <VuiBox display="flex" justifyContent="space-between" alignItems="center">
+          <VuiTypography variant="h6" color="white">
+            Subjects
+          </VuiTypography>
+          <Button variant="contained" color="primary" onClick={handleAddSubject}>
+            Add Subject
+          </Button>
+        </VuiBox>
+        <VuiBox>
+          <Table columns={columns} rows={rows} />
+        </VuiBox>
+      </Card>
+      <AddSubjectModal
+        open={addSubjectModalOpen}
+        handleClose={() => setAddSubjectModalOpen(false)}
+        fetchSubjects={fetchSubjects}
+      />
+    </VuiBox>
+  );
+};
+
+export default SubjectsTable;

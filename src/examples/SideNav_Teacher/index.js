@@ -174,20 +174,6 @@ function SidenavTeacher({ color, brandName, ...rest }) {
           },
         })}
       >
-        <SidenavCard color={color} />
-        <VuiBox mt={2}>
-          <VuiButton
-            component="a"
-            href="https://creative-tim.com/product/vision-ui-dashboard-pro-react"
-            target="_blank"
-            rel="noreferrer"
-            variant="gradient"
-            color={color}
-            fullWidth
-          >
-      УЧИТЕЛЬ
-          </VuiButton>
-        </VuiBox>
       </VuiBox>
     </SidenavRoot>
   );

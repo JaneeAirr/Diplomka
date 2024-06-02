@@ -2,6 +2,7 @@ import Dashboard from "layouts/dashboard";
 import Tables from "layouts/Tables_admin";
 import TablesGroup from "layouts/Tables_group_admin";
 import TablesSubject from "layouts/Tables_subject";
+import TablesSheld from "layouts/TableSheildu";
 import Billing from "layouts/Billing_admin";
 import LogAut from "layouts/authentication/Logout"
 import BillingAdmin from "layouts/Billing_admin";
@@ -20,6 +21,7 @@ import { BsCreditCardFill } from "react-icons/bs";
 import { IoStatsChart } from "react-icons/io5";
 import { PiStudent } from "react-icons/pi";
 import { IoHome } from "react-icons/io5";
+import { GrSchedules } from "react-icons/gr";
 import { SiGoogleclassroom } from "react-icons/si";
 import { PiChalkboardTeacherBold } from "react-icons/pi";
 import { MdOutlinePlayLesson } from "react-icons/md";
@@ -96,11 +98,11 @@ export const teacherRoutes = [
   },
   {
     type: "collapse",
-    name: "Billing",
-    key: "teacher-billing",
-    route: "/teacher/billing",
-    icon: <BsCreditCardFill size="15px" color="inherit" />, // Billing icon
-    component: Billing,
+    name: "Расписание",
+    key: "teacher-sheuid",
+    route: "/teacher/sheuid",
+    icon: <GrSchedules size="15px" color="inherit" />, // Billing icon
+    component: TablesSheld,
     noCollapse: true,
   },
   {
