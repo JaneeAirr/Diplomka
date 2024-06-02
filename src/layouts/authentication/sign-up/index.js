@@ -1,58 +1,60 @@
-/*!
-
-=========================================================
-* Vision UI Free React - v1.0.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/vision-ui-free-react
-* Copyright 2021 Creative Tim (https://www.creative-tim.com/)
-* Licensed under MIT (https://github.com/creativetimofficial/vision-ui-free-react/blob/master LICENSE.md)
-
-* Design and Coded by Simmmple & Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
 import { useState } from "react";
-
-// react-router-dom components
 import { Link } from "react-router-dom";
-
-// @mui material components
-import Icon from "@mui/material/Icon";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
-
-// Icons
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
 import { FaApple, FaFacebook, FaGoogle } from "react-icons/fa";
-
-// Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 import VuiInput from "components/VuiInput";
 import VuiButton from "components/VuiButton";
 import VuiSwitch from "components/VuiSwitch";
 import GradientBorder from "examples/GradientBorder";
-
-// Vision UI Dashboard assets
 import radialGradient from "assets/theme/functions/radialGradient";
-import rgba from "assets/theme/functions/rgba";
 import palette from "assets/theme/base/colors";
 import borders from "assets/theme/base/borders";
-
-// Authentication layout components
 import CoverLayout from "layouts/authentication/components/CoverLayout";
-
-// Images
 import bgSignIn from "assets/images/signUpImage.png";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import db from "../../../firebase";
 
-function SignIn() {
+function SignUp() {
   const [rememberMe, setRememberMe] = useState(true);
+  const [userRole, setUserRole] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSetRememberMe = () => setRememberMe(!rememberMe);
+  const handleRoleChange = (event) => setUserRole(event.target.value);
+
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    const auth = getAuth();
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Если роль не выбрана, назначаем роль admin
+      const roleToSave = userRole || "admin";
+
+      // Сохранение роли пользователя в Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        name: name,
+        email: email,
+        role: roleToSave,
+      });
+
+      console.log("User registered successfully:", user);
+    } catch (error) {
+      console.error("Error registering user:", error);
+    }
+  };
 
   return (
     <CoverLayout
@@ -73,6 +75,7 @@ function SignIn() {
           sx={({ palette: { secondary } }) => ({
             backgroundColor: secondary.focus,
           })}
+          onSubmit={handleSignUp}
         >
           <VuiTypography
             color="white"
@@ -86,91 +89,17 @@ function SignIn() {
             Register with
           </VuiTypography>
           <Stack mb="25px" justifyContent="center" alignItems="center" direction="row" spacing={2}>
-            <GradientBorder borderRadius="xl">
-              <a href="#">
-                <IconButton
-                  transition="all .25s ease"
-                  justify="center"
-                  align="center"
-                  bg="rgb(19,21,54)"
-                  borderradius="15px"
-                  sx={({ palette: { secondary }, borders: { borderRadius } }) => ({
-                    borderRadius: borderRadius.xl,
-                    padding: "25px",
-                    backgroundColor: secondary.focus,
-                    "&:hover": {
-                      backgroundColor: rgba(secondary.focus, 0.9),
-                    },
-                  })}
-                >
-                  <Icon
-                    as={FaFacebook}
-                    w="30px"
-                    h="30px"
-                    sx={({ palette: { white } }) => ({
-                      color: white.focus,
-                    })}
-                  />
-                </IconButton>
-              </a>
-            </GradientBorder>
-            <GradientBorder borderRadius="xl">
-              <a href="#">
-                <IconButton
-                  transition="all .25s ease"
-                  justify="center"
-                  align="center"
-                  bg="rgb(19,21,54)"
-                  borderradius="15px"
-                  sx={({ palette: { secondary }, borders: { borderRadius } }) => ({
-                    borderRadius: borderRadius.xl,
-                    padding: "25px",
-                    backgroundColor: secondary.focus,
-                    "&:hover": {
-                      backgroundColor: rgba(secondary.focus, 0.9),
-                    },
-                  })}
-                >
-                  <Icon
-                    as={FaApple}
-                    w="30px"
-                    h="30px"
-                    sx={({ palette: { white } }) => ({
-                      color: white.focus,
-                    })}
-                  />
-                </IconButton>
-              </a>
-            </GradientBorder>
-            <GradientBorder borderRadius="xl">
-              <a href="#">
-                <IconButton
-                  transition="all .25s ease"
-                  justify="center"
-                  align="center"
-                  bg="rgb(19,21,54)"
-                  borderradius="15px"
-                  sx={({ palette: { secondary }, borders: { borderRadius } }) => ({
-                    borderRadius: borderRadius.xl,
-                    padding: "25px",
-                    backgroundColor: secondary.focus,
-                    "&:hover": {
-                      backgroundColor: rgba(secondary.focus, 0.9),
-                    },
-                  })}
-                >
-                  <Icon
-                    as={FaGoogle}
-                    w="30px"
-                    h="30px"
-                    sx={({ palette: { white } }) => ({
-                      color: white.focus,
-                    })}
-                  />
-                </IconButton>
-              </a>
-            </GradientBorder>
+            <IconButton component="a" href="#" sx={{ bgcolor: "background.paper", borderRadius: "50%" }}>
+              <FaFacebook color="#4267B2" size="24px" />
+            </IconButton>
+            <IconButton component="a" href="#" sx={{ bgcolor: "background.paper", borderRadius: "50%" }}>
+              <FaApple color="#000" size="24px" />
+            </IconButton>
+            <IconButton component="a" href="#" sx={{ bgcolor: "background.paper", borderRadius: "50%" }}>
+              <FaGoogle color="#DB4437" size="24px" />
+            </IconButton>
           </Stack>
+
           <VuiTypography
             color="text"
             fontWeight="bold"
@@ -180,6 +109,15 @@ function SignIn() {
           >
             or
           </VuiTypography>
+
+          <FormControl component="fieldset" mb={2}>
+            <FormLabel component="legend" color="white">Select Role</FormLabel>
+            <RadioGroup row value={userRole} onChange={handleRoleChange}>
+              <FormControlLabel value="student" control={<Radio />} label="Student" />
+              <FormControlLabel value="teacher" control={<Radio />} label="Teacher" />
+            </RadioGroup>
+          </FormControl>
+
           <VuiBox mb={2}>
             <VuiBox mb={1} ml={0.5}>
               <VuiTypography component="label" variant="button" color="white" fontWeight="medium">
@@ -198,12 +136,15 @@ function SignIn() {
             >
               <VuiInput
                 placeholder="Your full name..."
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 sx={({ typography: { size } }) => ({
                   fontSize: size.sm,
                 })}
               />
             </GradientBorder>
           </VuiBox>
+
           <VuiBox mb={2}>
             <VuiBox mb={1} ml={0.5}>
               <VuiTypography component="label" variant="button" color="white" fontWeight="medium">
@@ -223,12 +164,15 @@ function SignIn() {
               <VuiInput
                 type="email"
                 placeholder="Your email..."
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 sx={({ typography: { size } }) => ({
                   fontSize: size.sm,
                 })}
               />
             </GradientBorder>
           </VuiBox>
+
           <VuiBox mb={2}>
             <VuiBox mb={1} ml={0.5}>
               <VuiTypography component="label" variant="button" color="white" fontWeight="medium">
@@ -248,13 +192,16 @@ function SignIn() {
               <VuiInput
                 type="password"
                 placeholder="Your password..."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 sx={({ typography: { size } }) => ({
                   fontSize: size.sm,
                 })}
               />
             </GradientBorder>
           </VuiBox>
-          <VuiBox display="flex" alignItems="center">
+
+          <VuiBox display="flex" alignItems="center" mt={2}>
             <VuiSwitch color="info" checked={rememberMe} onChange={handleSetRememberMe} />
             <VuiTypography
               variant="caption"
@@ -263,26 +210,22 @@ function SignIn() {
               onClick={handleSetRememberMe}
               sx={{ cursor: "pointer", userSelect: "none" }}
             >
-              &nbsp;&nbsp;&nbsp;&nbsp;Remember me
+              &nbsp;&nbsp;Remember me
             </VuiTypography>
           </VuiBox>
+
           <VuiBox mt={4} mb={1}>
-            <VuiButton color="info" fullWidth>
+            <VuiButton color="info" fullWidth type="submit">
               SIGN UP
             </VuiButton>
           </VuiBox>
+
           <VuiBox mt={3} textAlign="center">
             <VuiTypography variant="button" color="text" fontWeight="regular">
               Already have an account?{" "}
-              <VuiTypography
-                component={Link}
-                to="/authentication/sign-in"
-                variant="button"
-                color="white"
-                fontWeight="medium"
-              >
+              <Link to="/authentication/sign-in" style={{ color: "#fff", fontWeight: "medium" }}>
                 Sign in
-              </VuiTypography>
+              </Link>
             </VuiTypography>
           </VuiBox>
         </VuiBox>
@@ -291,4 +234,4 @@ function SignIn() {
   );
 }
 
-export default SignIn;
+export default SignUp;
