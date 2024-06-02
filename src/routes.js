@@ -1,6 +1,7 @@
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
-import Billing from "layouts/billing";
+import Billing from "layouts/Billing_admin";
+import BillingAdmin from "layouts/Billing_admin";
 import RTL from "layouts/rtl";
 import Profile from "layouts/profile";
 import SignIn from "layouts/authentication/sign-in";
@@ -15,53 +16,67 @@ import { IoBuild } from "react-icons/io5";
 import { BsCreditCardFill } from "react-icons/bs";
 import { IoStatsChart } from "react-icons/io5";
 import { IoHome } from "react-icons/io5";
-
+import { PiChalkboardTeacherBold } from "react-icons/pi";
+// Admin routes
 export const adminRoutes = [
   {
     type: "collapse",
-    name: "Dashboard",
+    name: "Главная",
     key: "admin-dashboard",
     route: "/admin/dashboard",
-    icon: <IoRocketSharp size="15px" color="inherit" />,
+    icon: <IoHome size="15px" color="inherit" />, // Home icon
     component: DashboardAdmin,
     noCollapse: true,
   },
-
-  // другие маршруты для администратора...
+  {
+    type: "collapse",
+    name: "Учителя",
+    key: "admin-billing",
+    route: "/admin/billing",
+    icon: <PiChalkboardTeacherBold size="15px" color="inherit" />, // Billing icon
+    component: Billing,
+    noCollapse: true,
+  },
+  // other admin routes...
 ];
-export const TeacherRoutes = [
+
+// Teacher routes
+export const teacherRoutes = [
   {
     type: "collapse",
     name: "Dashboard",
-    key: "admin-dashboard",
-    route: "/admin/dashboard",
-    icon: <IoRocketSharp size="15px" color="inherit" />,
+    key: "teacher-dashboard",
+    route: "/teacher/dashboard",
+    icon: <IoHome size="15px" color="inherit" />, // Home icon
     component: DashboardTeacher,
     noCollapse: true,
   },
   {
     type: "collapse",
-    name: "Tables",
-    key: "tables",
-    route: "/tables",
-    icon: <IoStatsChart size="15px" color="inherit" />,
-    component: Tables,
+    name: "Billing",
+    key: "teacher-billing",
+    route: "/teacher/billing",
+    icon: <BsCreditCardFill size="15px" color="inherit" />, // Billing icon
+    component: Billing,
     noCollapse: true,
   },
-  // другие маршруты для администратора...
+  // other teacher routes...
 ];
+
+// Student routes
 export const studentRoutes = [
   {
     type: "collapse",
     name: "Dashboard",
     key: "student-dashboard",
     route: "/student/dashboard",
-    icon: <IoRocketSharp size="15px" color="inherit" />,
+    icon: <IoHome size="15px" color="inherit" />, // Home icon
     component: DashboardStudent,
     noCollapse: true,
   },
-  // другие маршруты для студента...
+  // other student routes...
 ];
+
 const routes = [
   {
     type: "collapse",

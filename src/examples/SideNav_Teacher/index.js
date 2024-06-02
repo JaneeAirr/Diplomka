@@ -14,7 +14,7 @@ import SidenavRoot from "examples/SideNav_Teacher/SidenavRoot";
 import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 import { useVisionUIController, setMiniSidenav, setTransparentSidenav } from "context";
 import SimmmpleLogo from "examples/Icons/SimmmpleLogo";
-import { TeacherRoutes as routes } from "routes";
+import { teacherRoutes as routes } from "routes";
 
 function SidenavTeacher({ color, brandName, ...rest }) {
   const [controller, dispatch] = useVisionUIController();

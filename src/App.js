@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import Icon from "@mui/material/Icon";
 import VuiBox from "components/VuiBox";
 import Configurator from "examples/Configurator";
 import theme from "assets/theme";
@@ -19,14 +18,15 @@ import DashboardStudent from "layouts/Dashboard_Student";
 import SidenavAdmin from "examples/SideNav_admin/SidenavAdminWrapper";
 import SidenavTeacher from "examples/SideNav_Teacher/SidenavTeacherWrapper";
 import SidenavStudent from "examples/SideNav_Student/SidenavSdudentWrapper";
-import routes from "routes";
+import { adminRoutes, teacherRoutes, studentRoutes } from "routes";
 
 export default function App() {
   const [controller, dispatch] = useVisionUIController();
   const { miniSidenav, direction, layout, openConfigurator, sidenavColor } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const [rtlCache, setRtlCache] = useState(null);
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
   const [userRole, setUserRole] = useState(localStorage.getItem("userRole"));
 
   useMemo(() => {
@@ -63,82 +63,51 @@ export default function App() {
     document.scrollingElement.scrollTop = 0;
   }, [pathname]);
 
-  const getRoutes = (allRoutes) =>
-    allRoutes.map((route) => {
-      if (route.collapse) {
-        return getRoutes(route.collapse);
-      }
-
-      if (route.route) {
-        return <Route exact path={route.route} element={<route.component />} key={route.key} />;
-      }
-
-      return null;
-    });
-
-  const renderDashboard = () => {
-    if (userRole === "admin") {
-      return <DashboardAdmin />;
-    } else if (userRole === "teacher") {
-      return <DashboardTeacher />;
-    } else if (userRole === "student") {
-      return <DashboardStudent />;
-    } else {
-      return <Navigate to="/authentication/sign-in" />;
-    }
-  };
+  const renderRoutes = (routes) =>
+    routes.map((route) => (
+      <Route key={route.key} path={route.route} element={<route.component />} />
+    ));
 
   const renderSideNav = () => {
-    if (userRole === "admin") {
-      return <SidenavAdmin />;
-    } else if (userRole === "teacher") {
-      return <SidenavTeacher />;
-    } else if (userRole === "student") {
-      return <SidenavStudent />;
-    } else {
-      return null;
+    if (pathname.startsWith('/admin')) {
+      return <SidenavAdmin routes={adminRoutes} />;
+    } else if (pathname.startsWith('/teacher')) {
+      return <SidenavTeacher routes={teacherRoutes} />;
+    } else if (pathname.startsWith('/student')) {
+      return <SidenavStudent routes={studentRoutes} />;
     }
+    return null;
   };
-
-  const showSidenav = !["/authentication/sign-in", "/authentication/sign-up"].includes(pathname);
 
   return direction === "rtl" ? (
     <CacheProvider value={rtlCache}>
       <ThemeProvider theme={themeRTL}>
         <CssBaseline />
-        {showSidenav && renderSideNav()}
+        {pathname !== '/authentication/sign-in' && pathname !== '/authentication/sign-up' && renderSideNav()}
         <Routes>
           <Route path="/authentication/sign-in" element={<SignIn />} />
           <Route path="/authentication/sign-up" element={<SignUp />} />
-          <Route path="/admin/*" element={renderDashboard()} />
-          <Route path="/teacher/*" element={renderDashboard()} />
-          <Route path="/student/*" element={renderDashboard()} />
+          {renderRoutes(adminRoutes)}
+          {renderRoutes(teacherRoutes)}
+          {renderRoutes(studentRoutes)}
           <Route path="*" element={<Navigate to="/authentication/sign-in" />} />
         </Routes>
-        {layout === "dashboard" && (
-          <>
-            <Configurator />
-          </>
-        )}
+        {layout === "dashboard" && pathname !== '/authentication/sign-in' && pathname !== '/authentication/sign-up' && <Configurator />}
       </ThemeProvider>
     </CacheProvider>
   ) : (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {showSidenav && renderSideNav()}
+      {pathname !== '/authentication/sign-in' && pathname !== '/authentication/sign-up' && renderSideNav()}
       <Routes>
         <Route path="/authentication/sign-in" element={<SignIn />} />
         <Route path="/authentication/sign-up" element={<SignUp />} />
-        <Route path="/admin/*" element={renderDashboard()} />
-        <Route path="/teacher/*" element={renderDashboard()} />
-        <Route path="/student/*" element={renderDashboard()} />
+        {renderRoutes(adminRoutes)}
+        {renderRoutes(teacherRoutes)}
+        {renderRoutes(studentRoutes)}
         <Route path="*" element={<Navigate to="/authentication/sign-in" />} />
       </Routes>
-      {layout === "dashboard" && (
-        <>
-          <Configurator />
-        </>
-      )}
+      {layout === "dashboard" && pathname !== '/authentication/sign-in' && pathname !== '/authentication/sign-up' && <Configurator />}
     </ThemeProvider>
   );
 }
