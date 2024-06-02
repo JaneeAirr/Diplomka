@@ -28,7 +28,7 @@ import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 
 // Custom styles for the SidenavCard
-import { card, cardContent, cardIconBox, cardIcon } from "examples/Sidenav/styles/sidenavCard";
+import { card, cardContent, cardIconBox, cardIcon } from "examples/SideNav_Student/styles/sidenavCard";
 
 // Vision UI Dashboard React context
 import { useVisionUIController } from "context";

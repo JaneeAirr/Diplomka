@@ -26,6 +26,7 @@ export const adminRoutes = [
     component: DashboardAdmin,
     noCollapse: true,
   },
+
   // другие маршруты для администратора...
 ];
 export const TeacherRoutes = [
@@ -36,6 +37,15 @@ export const TeacherRoutes = [
     route: "/admin/dashboard",
     icon: <IoRocketSharp size="15px" color="inherit" />,
     component: DashboardTeacher,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Tables",
+    key: "tables",
+    route: "/tables",
+    icon: <IoStatsChart size="15px" color="inherit" />,
+    component: Tables,
     noCollapse: true,
   },
   // другие маршруты для администратора...
