@@ -3,11 +3,13 @@ import Tables from "layouts/Tables_admin";
 import TablesGroup from "layouts/Tables_group_admin";
 import TablesSubject from "layouts/Tables_subject";
 import TablesSheld from "layouts/TableSheildu";
+import TablesRooms from "layouts/Tables_Rooms";
 import Billing from "layouts/Billing_admin";
 import LogAut from "layouts/authentication/Logout"
 import BillingAdmin from "layouts/Billing_admin";
 import RTL from "layouts/rtl";
 import Profile from "layouts/profile";
+import { MdFlightClass } from "react-icons/md";
 import SignIn from "layouts/authentication/sign-in";
 import SignUp from "layouts/authentication/sign-up";
 import DashboardAdmin from "layouts/Dashboard_admin";
@@ -71,6 +73,15 @@ export const adminRoutes = [
     route: "/admin/tables-subject",
     icon: <MdOutlinePlayLesson size="15px" color="inherit" />, // Billing icon
     component:   TablesSubject,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Аудитории",
+    key: "admin-tables-rooms",
+    route: "/admin/tables-rooms",
+    icon: <MdFlightClass size="15px" color="inherit" />, // Billing icon
+    component:   TablesRooms,
     noCollapse: true,
   },
   {

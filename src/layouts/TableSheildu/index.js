@@ -1,35 +1,25 @@
-/*!
-
-=========================================================
-* Vision UI Free React - v1.0.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/vision-ui-free-react
-* Copyright 2021 Creative Tim (https://www.creative-tim.com/)
-* Licensed under MIT (https://github.com/creativetimofficial/vision-ui-free-react/blob/master LICENSE.md)
-
-* Design and Coded by Simmmple & Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
-// @mui material components
+import React, { useState } from "react";
 import Grid from "@mui/material/Grid";
-
-// Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
-
-// Vision UI Dashboard React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import ScheduleTable from "layouts/TableSheildu/components/Transactions";
+import ScheduleForm from "./ScheduleForm";
 
-// Billing page components
-import Transactions from "layouts/TableSheildu/components/Transactions";
+import VuiButton from "components/VuiButton";
+import { Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 
-function Billing() {
+function Billing({ userEmail }) {
+  const [formOpen, setFormOpen] = useState(false);
+
+  const handleOpenForm = () => {
+    setFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setFormOpen(false);
+  };
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -37,7 +27,23 @@ function Billing() {
         <VuiBox my={3}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Transactions />
+              <ScheduleTable />
+            </Grid>
+            <Grid item xs={12}>
+              <VuiButton variant="contained" color="info" onClick={handleOpenForm}>
+                Add Schedule
+              </VuiButton>
+              <Dialog open={formOpen} onClose={handleCloseForm}>
+                <DialogTitle>Add Schedule</DialogTitle>
+                <DialogContent>
+                  <ScheduleForm userEmail={userEmail} handleClose={handleCloseForm} />
+                </DialogContent>
+                <DialogActions>
+                  <VuiButton onClick={handleCloseForm} color="info">
+                    Cancel
+                  </VuiButton>
+                </DialogActions>
+              </Dialog>
             </Grid>
           </Grid>
         </VuiBox>
