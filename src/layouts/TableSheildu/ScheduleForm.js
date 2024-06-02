@@ -2,10 +2,8 @@ import React, { useEffect, useState } from "react";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import db from "../../firebase";
 import { Button, TextField, MenuItem, Box, FormControl, InputLabel, Select } from "@mui/material";
-import VuiBox from "components/VuiBox";
-import VuiTypography from "components/VuiTypography";
 
-const ScheduleForm = ({ userEmail, handleClose }) => {
+const ScheduleForm = ({ userEmail }) => {
   const [groups, setGroups] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [subject, setSubject] = useState("");
@@ -31,13 +29,22 @@ const ScheduleForm = ({ userEmail, handleClose }) => {
     };
 
     const fetchTeacherSubject = async () => {
-      if (userEmail) {
-        const q = query(collection(db, "users"), where("email", "==", userEmail));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          const userData = querySnapshot.docs[0].data();
-          setSubject(userData.subject);
-        }
+      if (!userEmail) {
+        console.error("User email is undefined");
+        setError("User email is undefined");
+        return;
+      }
+
+      console.log("Fetching subject for userEmail:", userEmail); // Debugging log
+      const q = query(collection(db, "users"), where("email", "==", userEmail));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data();
+        console.log("User data:", userData); // Debugging log
+        setSubject(userData.subject);
+      } else {
+        console.error("No user found with the provided email.");
+        setError("No user found with the provided email.");
       }
     };
 
@@ -76,7 +83,6 @@ const ScheduleForm = ({ userEmail, handleClose }) => {
       });
       setError("");
       alert("Class scheduled successfully");
-      handleClose();
     } catch (error) {
       setError("Error scheduling class: " + error.message);
     }
@@ -130,7 +136,7 @@ const ScheduleForm = ({ userEmail, handleClose }) => {
         value={endTime}
         onChange={(e) => setEndTime(e.target.value)}
       />
-      {error && <VuiBox color="red">{error}</VuiBox>}
+      {error && <Box color="red">{error}</Box>}
       <Button type="submit" variant="contained" color="primary">
         Schedule Class
       </Button>

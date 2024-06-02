@@ -112,7 +112,7 @@ export const teacherRoutes = [
     name: "Расписание",
     key: "teacher-sheuid",
     route: "/teacher/sheuid",
-    icon: <GrSchedules size="15px" color="inherit" />, // Billing icon
+    icon: <IoHome size="15px" color="inherit" />, // Billing icon
     component: TablesSheld,
     noCollapse: true,
   },

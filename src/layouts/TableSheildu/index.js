@@ -1,55 +1,65 @@
-import React, { useState } from "react";
-import Grid from "@mui/material/Grid";
+import React, { useState, useEffect } from "react";
+import { Grid, Modal, Box } from "@mui/material";
 import VuiBox from "components/VuiBox";
+import VuiTypography from "components/VuiTypography";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import ScheduleTable from "layouts/TableSheildu/components/Transactions";
 import ScheduleForm from "./ScheduleForm";
-
+import ScheduleTable from "./components/Transactions";
 import VuiButton from "components/VuiButton";
-import { Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 
-function Billing({ userEmail }) {
-  const [formOpen, setFormOpen] = useState(false);
+const SchedulePage = () => {
+  const [userEmail, setUserEmail] = useState("");
 
-  const handleOpenForm = () => {
-    setFormOpen(true);
-  };
+  useEffect(() => {
+    const email = localStorage.getItem("userEmail");
+    if (email) {
+      setUserEmail(email);
+    }
+  }, []);
 
-  const handleCloseForm = () => {
-    setFormOpen(false);
-  };
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  console.log("SchedulePage userEmail:", userEmail); // Debugging log
 
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <VuiBox mt={4}>
-        <VuiBox my={3}>
+        <VuiBox mb={1.5}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <ScheduleTable />
-            </Grid>
-            <Grid item xs={12}>
-              <VuiButton variant="contained" color="info" onClick={handleOpenForm}>
-                Add Schedule
-              </VuiButton>
-              <Dialog open={formOpen} onClose={handleCloseForm}>
-                <DialogTitle>Add Schedule</DialogTitle>
-                <DialogContent>
-                  <ScheduleForm userEmail={userEmail} handleClose={handleCloseForm} />
-                </DialogContent>
-                <DialogActions>
-                  <VuiButton onClick={handleCloseForm} color="info">
-                    Cancel
-                  </VuiButton>
-                </DialogActions>
-              </Dialog>
+              <ScheduleTable userEmail={userEmail} />
             </Grid>
           </Grid>
+        </VuiBox>
+        <VuiBox mb={3}>
+          <VuiButton variant="contained" color="primary" onClick={handleOpen}>
+            Add Schedule
+          </VuiButton>
+          <Modal open={open} onClose={handleClose}>
+            <Box sx={{ ...modalStyle }}>
+              <ScheduleForm userEmail={userEmail} />
+            </Box>
+          </Modal>
         </VuiBox>
       </VuiBox>
     </DashboardLayout>
   );
-}
+};
 
-export default Billing;
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  boxShadow: 24,
+  p: 4,
+  borderRadius: 2,
+};
+
+export default SchedulePage;
