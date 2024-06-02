@@ -1,48 +1,28 @@
-/*!
-
-=========================================================
-* Vision UI Free React - v1.0.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/vision-ui-free-react
-* Copyright 2021 Creative Tim (https://www.creative-tim.com/)
-* Licensed under MIT (https://github.com/creativetimofficial/vision-ui-free-react/blob/master LICENSE.md)
-
-* Design and Coded by Simmmple & Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
-// @mui material components
+import { useEffect, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import db from "../../firebase";
 import Grid from "@mui/material/Grid";
-import Icon from "@mui/material/Icon";
 import { Card, LinearProgress, Stack } from "@mui/material";
 
 // Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
-import VuiProgress from "components/VuiProgress";
 
 // Vision UI Dashboard React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import MiniStatisticsCard from "examples/Cards/StatisticsCards/MiniStatisticsCard";
-import linearGradient from "assets/theme/functions/linearGradient";
 
 // Vision UI Dashboard React base styles
-import typography from "assets/theme/base/typography";
 import colors from "assets/theme/base/colors";
 
 // Dashboard layout components
-import WelcomeMark from "layouts/dashboard/components/WelcomeMark";
-import Projects from "layouts/dashboard/components/Projects";
-import OrderOverview from "layouts/dashboard/components/OrderOverview";
-import SatisfactionRate from "layouts/dashboard/components/SatisfactionRate";
-import ReferralTracking from "layouts/dashboard/components/ReferralTracking";
+import WelcomeMark from "layouts/Dashboard_Teacher/components/WelcomeMark";
+import Projects from "layouts/Dashboard_Teacher/components/Projects";
+import OrderOverview from "layouts/Dashboard_Teacher/components/OrderOverview";
+import SatisfactionRate from "layouts/Dashboard_Teacher/components/SatisfactionRate";
+import ReferralTracking from "layouts/Dashboard_Teacher/components/ReferralTracking";
 
 // React icons
 import { IoIosRocket } from "react-icons/io";
@@ -51,18 +31,74 @@ import { IoBuild } from "react-icons/io5";
 import { IoWallet } from "react-icons/io5";
 import { IoDocumentText } from "react-icons/io5";
 import { FaShoppingCart } from "react-icons/fa";
-
+import  StudentIcon from "assets/icons/Student.png"
+import TeacherIcon from "assets/icons/teacher.png"
+import SubjectIcon from "assets/icons/Subject.png"
+import linearGradient from "../../assets/theme/functions/linearGradient";
+import VuiProgress from "../../components/VuiProgress";
 // Data
 import LineChart from "examples/Charts/LineCharts/LineChart";
 import BarChart from "examples/Charts/BarCharts/BarChart";
-import { lineChartDataDashboard } from "layouts/dashboard/data/lineChartData";
-import { lineChartOptionsDashboard } from "layouts/dashboard/data/lineChartOptions";
-import { barChartDataDashboard } from "layouts/dashboard/data/barChartData";
-import { barChartOptionsDashboard } from "layouts/dashboard/data/barChartOptions";
+import { lineChartDataDashboard } from "layouts/Dashboard_Teacher/data/lineChartData";
+import { lineChartOptionsDashboard } from "layouts/Dashboard_Teacher/data/lineChartOptions";
+import { barChartDataDashboard } from "layouts/Dashboard_Teacher/data/barChartData";
+import { barChartOptionsDashboard } from "layouts/Dashboard_Teacher/data/barChartOptions";
 
 function Dashboard() {
   const { gradients } = colors;
   const { cardContent } = gradients;
+
+  const [teacherCount, setTeacherCount] = useState(0);
+  const [studentCount, setStudentCount] = useState(0);
+  const [subjectCount, setSubjectCount] = useState(0); // State for subject count
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      const usersCollection = collection(db, "users");
+      const usersSnapshot = await getDocs(usersCollection);
+      const usersList = usersSnapshot.docs.map((doc) => doc.data());
+      const teachersList = usersList.filter((user) => user.role === "teacher");
+      setTeacherCount(teachersList.length);
+    };
+
+    const fetchStudents = async () => {
+      const q = query(collection(db, "users"), where("role", "==", "student"));
+      const querySnapshot = await getDocs(q);
+      const studentsList = querySnapshot.docs.map((doc) => doc.data());
+      setStudentCount(studentsList.length);
+    };
+
+    const fetchSubjects = async () => {
+      const subjectsCollection = collection(db, "subjects");
+      const subjectsSnapshot = await getDocs(subjectsCollection);
+      setSubjectCount(subjectsSnapshot.size);
+    };
+
+    const fetchUserData = async () => {
+      const userEmail = localStorage.getItem("userEmail");
+      console.log("Fetched userEmail from localStorage:", userEmail);
+      if (userEmail) {
+        const usersCollection = collection(db, "users");
+        const q = query(usersCollection, where("email", "==", userEmail));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const userData = querySnapshot.docs[0].data();
+          console.log("User data fetched from Firestore:", userData);
+          setUserName(userData.name);
+        } else {
+          console.log("No user found with the provided email.");
+        }
+      } else {
+        console.log("No userEmail found in localStorage.");
+      }
+    };
+
+    fetchTeachers();
+    fetchStudents();
+    fetchSubjects();
+    fetchUserData();
+  }, []);
 
   return (
     <DashboardLayout>
@@ -70,36 +106,24 @@ function Dashboard() {
       <VuiBox py={3}>
         <VuiBox mb={3}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6} xl={3}>
+            <Grid item xs={12} md={4} xl={4}>
               <MiniStatisticsCard
-                title={{ text: "ебать негра ", fontWeight: "regular" }}
-                count="$53,000"
-                percentage={{ color: "success", text: "+55%" }}
-                icon={{ color: "info", component: <IoWallet size="22px" color="white" /> }}
+                title={{ text: "Группы ", fontWeight: "regular" }}
+                count={studentCount}
+                icon={{
+                  color: "info",
+                  component: <img src={StudentIcon} alt="Student Icon" style={{ width: "20px", height: "20px" }} />,
+                }}
               />
             </Grid>
-            <Grid item xs={12} md={6} xl={3}>
+            <Grid item xs={12} md={4} xl={4}>
               <MiniStatisticsCard
-                title={{ text: "today's users" }}
-                count="2,300"
-                percentage={{ color: "success", text: "+3%" }}
-                icon={{ color: "info", component: <IoGlobe size="22px" color="white" /> }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6} xl={3}>
-              <MiniStatisticsCard
-                title={{ text: "new clients" }}
-                count="+3,462"
-                percentage={{ color: "error", text: "-2%" }}
-                icon={{ color: "info", component: <IoDocumentText size="22px" color="white" /> }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6} xl={3}>
-              <MiniStatisticsCard
-                title={{ text: "total sales" }}
-                count="$103,430"
-                percentage={{ color: "success", text: "+5%" }}
-                icon={{ color: "info", component: <FaShoppingCart size="20px" color="white" /> }}
+                title={{ text: "Мой предмет" }}
+                count={teacherCount}
+                icon={{
+                  color: "info",
+                  component: <img src={TeacherIcon} alt="Teacher Icon" style={{ width: "20px", height: "20px" }} />,
+                }}
               />
             </Grid>
           </Grid>
@@ -107,7 +131,7 @@ function Dashboard() {
         <VuiBox mb={3}>
           <Grid container spacing="18px">
             <Grid item xs={12} lg={12} xl={5}>
-              <WelcomeMark />
+              <WelcomeMark userName={userName} />
             </Grid>
             <Grid item xs={12} lg={6} xl={3}>
               <SatisfactionRate />

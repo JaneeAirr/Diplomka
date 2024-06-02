@@ -3,6 +3,7 @@ import Tables from "layouts/Tables_admin";
 import TablesGroup from "layouts/Tables_group_admin";
 import TablesSubject from "layouts/Tables_subject";
 import Billing from "layouts/Billing_admin";
+import LogAut from "layouts/authentication/Logout"
 import BillingAdmin from "layouts/Billing_admin";
 import RTL from "layouts/rtl";
 import Profile from "layouts/profile";
@@ -22,6 +23,7 @@ import { IoHome } from "react-icons/io5";
 import { SiGoogleclassroom } from "react-icons/si";
 import { PiChalkboardTeacherBold } from "react-icons/pi";
 import { MdOutlinePlayLesson } from "react-icons/md";
+import { CiLogout } from "react-icons/ci";
 // Admin routes
 export const adminRoutes = [
   {
@@ -69,7 +71,15 @@ export const adminRoutes = [
     component:   TablesSubject,
     noCollapse: true,
   },
-
+  {
+    type: "collapse",
+    name: "Выйти",
+    key: "logout",
+    route: "/authentication/logout",
+    icon: <CiLogout size="15px" color="inherit" />,
+    component: LogAut,
+    noCollapse: true,
+  },
   // other admin routes...
 ];
 
@@ -93,6 +103,15 @@ export const teacherRoutes = [
     component: Billing,
     noCollapse: true,
   },
+  {
+    type: "collapse",
+    name: "Выйти",
+    key: "logout",
+    route: "/authentication/logout",
+    icon: <CiLogout size="15px" color="inherit" />,
+    component: LogAut,
+    noCollapse: true,
+  },
   // other teacher routes...
 ];
 
@@ -105,6 +124,15 @@ export const studentRoutes = [
     route: "/student/dashboard",
     icon: <IoHome size="15px" color="inherit" />, // Home icon
     component: Tables,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Выйти",
+    key: "logout",
+    route: "/authentication/logout",
+    icon: <CiLogout size="15px" color="inherit" />,
+    component: LogAut,
     noCollapse: true,
   },
   // other student routes...
@@ -200,6 +228,15 @@ const routes = [
     route: "/student/dashboard",
     icon: <IoRocketSharp size="15px" color="inherit" />,
     component: DashboardStudent,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
+    name: "Выйти",
+    key: "logout",
+    route: "/authentication/logout",
+    icon: <IoRocketSharp size="15px" color="inherit" />,
+    component: LogAut,
     noCollapse: true,
   },
 ];
