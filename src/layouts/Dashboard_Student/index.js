@@ -40,6 +40,10 @@ function Dashboard() {
               console.log("Fetched user data:", userData); // Debugging line
             } else {
               console.log("No user found with the provided user ID.");
+              userSnapshot.docs.forEach(doc => {
+                console.log("Document ID:", doc.id);
+                console.log("Document data:", doc.data());
+              });
             }
           } catch (error) {
             console.error("Error fetching user data:", error);
@@ -115,7 +119,7 @@ function Dashboard() {
 
       try {
         const classesCollection = collection(db, "classes");
-        const now = new Date();
+        const now = new Date().toISOString();
         const classesQuery = query(
           classesCollection,
           where("groupId", "==", groupId),
@@ -165,7 +169,7 @@ function Dashboard() {
             <Grid item xs={12} md={6} xl={3}>
               <MiniStatisticsCard
                 title={{ text: "Nearest Class" }}
-                count={nearestClass !== null ? `${nearestClass.subject} at ${new Date(nearestClass.startTime).toLocaleString()}` : "No upcoming classes"}
+                count={nearestClass !== null ? `${nearestClass.subject} at ${new Date(nearestClass.startTime).toLocaleString()} in Room ${nearestClass.roomId}` : "No upcoming classes"}
                 icon={{ color: "info", component: <IoDocumentText size="22px" color="white" /> }}
               />
             </Grid>

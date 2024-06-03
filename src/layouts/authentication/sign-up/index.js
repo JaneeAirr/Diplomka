@@ -40,10 +40,10 @@ function SignUp() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Если роль не выбрана, назначаем роль admin
+      // If no role is selected, default to "admin"
       const roleToSave = userRole || "admin";
 
-      // Сохранение роли пользователя в Firestore
+      // Save user role to Firestore
       await setDoc(doc(db, "users", user.uid), {
         name: name,
         email: email,
@@ -58,15 +58,22 @@ function SignUp() {
 
   return (
     <CoverLayout
-      title="Welcome!"
+      title="Добро пожаловать!"
       color="white"
-      description="Use these awesome forms to login or create new account in your project for free."
       image={bgSignIn}
-      premotto="INSPIRED BY THE FUTURE:"
-      motto="THE VISION UI DASHBOARD"
+      premotto="College Managment"
+      motto="by Daniil_Shekhovtsov"
       cardContent
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center", // Center the text
+        minHeight: "100vh",
+        py: 0,
+      }}
     >
-      <GradientBorder borderRadius={borders.borderRadius.form} minWidth="100%" maxWidth="100%">
+      <GradientBorder borderRadius={borders.borderRadius.form} width="100%" maxWidth="800px"> {/* Increased maxWidth */}
         <VuiBox
           component="form"
           role="form"
@@ -74,6 +81,9 @@ function SignUp() {
           p="45px"
           sx={({ palette: { secondary } }) => ({
             backgroundColor: secondary.focus,
+            width: "100%",
+            maxWidth: "700px", // Adjust the max-width as needed
+            mx: "auto", // Center horizontally
           })}
           onSubmit={handleSignUp}
         >
@@ -86,28 +96,7 @@ function SignUp() {
               fontSize: size.lg,
             })}
           >
-            Register with
-          </VuiTypography>
-          <Stack mb="25px" justifyContent="center" alignItems="center" direction="row" spacing={2}>
-            <IconButton component="a" href="#" sx={{ bgcolor: "background.paper", borderRadius: "50%" }}>
-              <FaFacebook color="#4267B2" size="24px" />
-            </IconButton>
-            <IconButton component="a" href="#" sx={{ bgcolor: "background.paper", borderRadius: "50%" }}>
-              <FaApple color="#000" size="24px" />
-            </IconButton>
-            <IconButton component="a" href="#" sx={{ bgcolor: "background.paper", borderRadius: "50%" }}>
-              <FaGoogle color="#DB4437" size="24px" />
-            </IconButton>
-          </Stack>
-
-          <VuiTypography
-            color="text"
-            fontWeight="bold"
-            textAlign="center"
-            mb="14px"
-            sx={({ typography: { size } }) => ({ fontSize: size.lg })}
-          >
-            or
+            Зарегистрироватся
           </VuiTypography>
 
           <FormControl component="fieldset" mb={2}>
