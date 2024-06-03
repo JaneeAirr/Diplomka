@@ -4,9 +4,12 @@ import TablesGroup from "layouts/Tables_group_admin";
 import TablesSubject from "layouts/Tables_subject";
 import TablesSheld from "layouts/TableSheildu";
 import TablesRooms from "layouts/Tables_Rooms";
+import Tables_mark from "./layouts/Tables_mark";
 import Billing from "layouts/Billing_admin";
+import StudentDashboadr from "layouts/Dashboard_Student"
 import LogAut from "layouts/authentication/Logout"
 import TeacherAden from "layouts/Table_Adden"
+import { IoIosCheckmarkCircleOutline } from "react-icons/io";
 import BillingAdmin from "layouts/Billing_admin";
 import { FaUserXmark } from "react-icons/fa6";
 import RTL from "layouts/rtl";
@@ -129,6 +132,15 @@ export const teacherRoutes = [
   },
   {
     type: "collapse",
+    name: "Оценивание",
+    key: "teacher-mark",
+    route: "/teacher/mark",
+    icon: <IoIosCheckmarkCircleOutline size="15px" color="inherit" />, // Billing icon
+    component: Tables_mark,
+    noCollapse: true,
+  },
+  {
+    type: "collapse",
     name: "Выйти",
     key: "logout",
     route: "/authentication/logout",
@@ -147,7 +159,7 @@ export const studentRoutes = [
     key: "student-dashboard",
     route: "/student/dashboard",
     icon: <IoHome size="15px" color="inherit" />, // Home icon
-    component: Tables,
+    component: StudentDashboadr,
     noCollapse: true,
   },
   {
@@ -161,6 +173,7 @@ export const studentRoutes = [
   },
   // other student routes...
 ];
+
 
 const routes = [
   {

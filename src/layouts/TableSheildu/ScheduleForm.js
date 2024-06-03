@@ -6,7 +6,7 @@ import { Button, TextField, MenuItem, Box, FormControl, InputLabel, Select } fro
 const ScheduleForm = ({ userEmail, editMode, currentClass, onClose }) => {
   const [groups, setGroups] = useState([]);
   const [rooms, setRooms] = useState([]);
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(currentClass ? currentClass.subject : "");
   const [selectedGroup, setSelectedGroup] = useState(currentClass ? currentClass.groupId : "");
   const [selectedRoom, setSelectedRoom] = useState(currentClass ? currentClass.roomId : "");
   const [startTime, setStartTime] = useState(currentClass ? currentClass.startTime : "");
@@ -39,7 +39,7 @@ const ScheduleForm = ({ userEmail, editMode, currentClass, onClose }) => {
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data();
-        setSubject(userData.subject);
+        setSubject(userData.subject || "");
       } else {
         console.error("No user found with the provided email.");
         setError("No user found with the provided email.");
@@ -53,6 +53,11 @@ const ScheduleForm = ({ userEmail, editMode, currentClass, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!subject) {
+      setError("Subject is required.");
+      return;
+    }
 
     const classesCollection = collection(db, "classes");
     const q = query(classesCollection, where("roomId", "==", selectedRoom));
@@ -146,6 +151,12 @@ const ScheduleForm = ({ userEmail, editMode, currentClass, onClose }) => {
         }}
         value={endTime}
         onChange={(e) => setEndTime(e.target.value)}
+      />
+      <TextField
+        label="Subject"
+        value={subject}
+        onChange={(e) => setSubject(e.target.value)}
+        required
       />
       {error && <Box color="red">{error}</Box>}
       <Button type="submit" variant="contained" color="primary">
