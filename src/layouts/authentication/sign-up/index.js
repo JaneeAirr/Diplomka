@@ -17,7 +17,7 @@ import borders from "assets/theme/base/borders";
 import CoverLayout from "layouts/authentication/components/CoverLayout";
 import bgSignIn from "assets/images/background-basic-auth.webp";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import db from "../../../firebase";
 
 function SignUp() {
@@ -40,7 +40,6 @@ function SignUp() {
     setLoading(true);
     setAlert({ type: "", message: "", open: false });
 
-    // Validate input
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!name || !email || !password || !userRole) {
       setAlert({ type: "warning", message: "All fields must be filled out.", open: true });
@@ -63,23 +62,20 @@ function SignUp() {
       const user = userCredential.user;
       console.log("Authenticated user ID:", user.uid);
 
-      // If role is not selected, assign "admin" role
       const roleToSave = userRole || "admin";
 
-      // Save user role in Firestore
       await setDoc(doc(db, "users", user.uid), {
         name: name,
         email: email,
         role: roleToSave,
+        createdAt: serverTimestamp()
       });
       console.log("User document created successfully");
 
-      // Verify the document creation before navigating
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
         console.log("User registered successfully:", user);
 
-        // Redirect to dashboard based on role
         if (roleToSave === "student") {
           navigate("/student/dashboard");
         } else if (roleToSave === "teacher") {
@@ -254,8 +250,6 @@ function SignUp() {
                 />
               </GradientBorder>
             </VuiBox>
-
-
 
             <VuiBox mt={4} mb={1}>
               <VuiButton color="info" fullWidth type="submit" disabled={loading}>

@@ -1,16 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Box, TextField, Button } from "@mui/material";
-import { collection, addDoc } from "firebase/firestore";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 import db from "../../firebase";
 
-const AddSubjectModal = ({ open, handleClose, fetchSubjects }) => {
+const EditSubjectModal = ({ open, handleClose, subjectId, fetchSubjects }) => {
   const [subjectName, setSubjectName] = useState("");
   const [course, setCourse] = useState("");
 
-  const handleAddSubject = async () => {
+  useEffect(() => {
+    const fetchSubject = async () => {
+      if (subjectId) {
+        const docRef = doc(db, "subjects", subjectId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setSubjectName(data.name);
+          setCourse(data.course);
+        }
+      }
+    };
+    fetchSubject();
+  }, [subjectId]);
+
+  const handleEditSubject = async () => {
     if (subjectName && course) {
       try {
-        await addDoc(collection(db, "subjects"), {
+        const docRef = doc(db, "subjects", subjectId);
+        await updateDoc(docRef, {
           name: subjectName,
           course: course,
         });
@@ -19,7 +35,7 @@ const AddSubjectModal = ({ open, handleClose, fetchSubjects }) => {
         handleClose();
         fetchSubjects();
       } catch (error) {
-        console.error("Error adding subject:", error);
+        console.error("Error updating subject:", error);
       }
     }
   };
@@ -38,7 +54,7 @@ const AddSubjectModal = ({ open, handleClose, fetchSubjects }) => {
           p: 4,
         }}
       >
-        <h2>Add Subject</h2>
+        <h2>Edit Subject</h2>
         <TextField
           fullWidth
           label="Subject Name"
@@ -53,12 +69,12 @@ const AddSubjectModal = ({ open, handleClose, fetchSubjects }) => {
           onChange={(e) => setCourse(e.target.value)}
           margin="normal"
         />
-        <Button variant="contained" onClick={handleAddSubject}>
-          Add Subject
+        <Button variant="contained" onClick={handleEditSubject}>
+          Save Changes
         </Button>
       </Box>
     </Modal>
   );
 };
 
-export default AddSubjectModal;
+export default EditSubjectModal;

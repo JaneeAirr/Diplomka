@@ -8,7 +8,7 @@ const WelcomeMark = ({ userName }) => {
   return (
     <Card
       sx={{
-        height: "200px",
+        height: "500px",
         width: "100%",
         py: "32px",
         backgroundImage: `url(${gif})`,

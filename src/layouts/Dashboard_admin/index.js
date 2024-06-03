@@ -1,24 +1,37 @@
-import { useState, useEffect } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { Box, Grid, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Avatar } from "@mui/material";
+import { useEffect, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import db from "../../firebase";
-import VuiBox from "../../components/VuiBox";
-// Components
+import Grid from "@mui/material/Grid";
+import { Card, LinearProgress, Stack } from "@mui/material";
+
+// Vision UI Dashboard React components
+import VuiBox from "components/VuiBox";
+import VuiTypography from "components/VuiTypography";
+
+// Vision UI Dashboard React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import MiniStatisticsCard from "examples/Cards/StatisticsCards/MiniStatisticsCard";
+
+// Vision UI Dashboard React base styles
+import colors from "assets/theme/base/colors";
+
+// Dashboard layout components
 import WelcomeMark from "layouts/dashboard/components/WelcomeMark";
-import Reviews from "./components/Reviews";
+import Reviews from "./components/Reviews"; // Ensure the correct path
+import RecentRegistrations from "./components/TableReg"; // Ensure the correct path
 import { PiStudent } from "react-icons/pi";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import { MdOutlinePlayLesson } from "react-icons/md";
 
 function Dashboard() {
+  const { gradients } = colors;
+  const { cardContent } = gradients;
+
   const [teacherCount, setTeacherCount] = useState(0);
   const [studentCount, setStudentCount] = useState(0);
   const [subjectCount, setSubjectCount] = useState(0);
   const [userName, setUserName] = useState("");
-  const [users, setUsers] = useState([]); // New state for users
 
   useEffect(() => {
     const fetchTeachers = async () => {
@@ -30,7 +43,7 @@ function Dashboard() {
     };
 
     const fetchStudents = async () => {
-      const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+      const q = query(collection(db, "users"), where("role", "==", "student"));
       const querySnapshot = await getDocs(q);
       const studentsList = querySnapshot.docs.map((doc) => doc.data());
       setStudentCount(studentsList.length);
@@ -44,29 +57,27 @@ function Dashboard() {
 
     const fetchUserData = async () => {
       const userEmail = localStorage.getItem("userEmail");
+      console.log("Fetched userEmail from localStorage:", userEmail);
       if (userEmail) {
         const usersCollection = collection(db, "users");
         const q = query(usersCollection, where("email", "==", userEmail));
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           const userData = querySnapshot.docs[0].data();
+          console.log("User data fetched from Firestore:", userData);
           setUserName(userData.name);
+        } else {
+          console.log("No user found with the provided email.");
         }
+      } else {
+        console.log("No userEmail found in localStorage.");
       }
-    };
-
-    const fetchUsers = async () => {
-      const usersCollection = collection(db, "users");
-      const usersSnapshot = await getDocs(query(usersCollection, orderBy("createdAt", "desc")));
-      const usersList = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setUsers(usersList);
     };
 
     fetchTeachers();
     fetchStudents();
     fetchSubjects();
     fetchUserData();
-    fetchUsers(); // Fetch users for the table
   }, []);
 
   return (
@@ -120,31 +131,7 @@ function Dashboard() {
         <VuiBox mb={3}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TableContainer component={Paper} sx={{ backgroundColor: "transparent", boxShadow: "none" }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ color: "#ffffff", fontWeight: "bold" }}>Name</TableCell>
-                      <TableCell sx={{ color: "#ffffff", fontWeight: "bold" }}>Email</TableCell>
-                      <TableCell sx={{ color: "#ffffff", fontWeight: "bold" }}>Role</TableCell>
-                      <TableCell sx={{ color: "#ffffff", fontWeight: "bold" }}>Registered At</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {users.map(user => (
-                      <TableRow key={user.id}>
-                        <TableCell sx={{ color: "#ffffff", display: "flex", alignItems: "center" }}>
-                          <Avatar src={user.photoURL} alt={user.name} sx={{ marginRight: 2 }} />
-                          {user.name}
-                        </TableCell>
-                        <TableCell sx={{ color: "#ffffff" }}>{user.email}</TableCell>
-                        <TableCell sx={{ color: "#ffffff" }}>{user.role}</TableCell>
-                        <TableCell sx={{ color: "#ffffff" }}>{new Date(user.createdAt.toMillis()).toLocaleString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <RecentRegistrations />
             </Grid>
           </Grid>
         </VuiBox>

@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import db from "../../../../firebase";
-import Grid from "@mui/material/Grid";
 import { Card, Button, IconButton } from "@mui/material";
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 import Table from "examples/Tables/Table";
 import AddSubjectModal from "../../../Tables_subject/AddSubjectModal";
+import EditSubjectModal from "../../../Tables_subject/EditSubjectModal";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
-const useSubjectsTableData = () => {
+const useSubjectsTableData = (handleEditClick) => {
   const [rows, setRows] = useState([]);
 
   const fetchSubjects = useCallback(async () => {
@@ -22,10 +23,20 @@ const useSubjectsTableData = () => {
           {subject.name}
         </VuiTypography>
       ),
+      course: (
+        <VuiTypography variant="button" color="white" fontWeight="medium" sx={{ textAlign: "center" }}>
+          {subject.course}
+        </VuiTypography>
+      ),
       action: (
-        <IconButton color="error" onClick={() => handleDeleteSubject(subject.id)}>
-          <DeleteIcon />
-        </IconButton>
+        <>
+          <IconButton color="primary" onClick={() => handleEditClick(subject.id)}>
+            <EditIcon />
+          </IconButton>
+          <IconButton color="error" onClick={() => handleDeleteSubject(subject.id)}>
+            <DeleteIcon />
+          </IconButton>
+        </>
       ),
       hasBorder: true,
     }));
@@ -49,6 +60,7 @@ const useSubjectsTableData = () => {
   return {
     columns: [
       { name: "name", align: "left" },
+      { name: "course", align: "center" },
       { name: "action", align: "center" },
     ],
     rows,
@@ -57,7 +69,15 @@ const useSubjectsTableData = () => {
 };
 
 const SubjectsTable = () => {
-  const { columns, rows, fetchSubjects } = useSubjectsTableData();
+  const [editSubjectModalOpen, setEditSubjectModalOpen] = useState(false);
+  const [currentSubjectId, setCurrentSubjectId] = useState(null);
+
+  const handleEditClick = (subjectId) => {
+    setCurrentSubjectId(subjectId);
+    setEditSubjectModalOpen(true);
+  };
+
+  const { columns, rows, fetchSubjects } = useSubjectsTableData(handleEditClick);
   const [addSubjectModalOpen, setAddSubjectModalOpen] = useState(false);
 
   const handleAddSubject = () => {
@@ -82,6 +102,12 @@ const SubjectsTable = () => {
       <AddSubjectModal
         open={addSubjectModalOpen}
         handleClose={() => setAddSubjectModalOpen(false)}
+        fetchSubjects={fetchSubjects}
+      />
+      <EditSubjectModal
+        open={editSubjectModalOpen}
+        handleClose={() => setEditSubjectModalOpen(false)}
+        subjectId={currentSubjectId}
         fetchSubjects={fetchSubjects}
       />
     </VuiBox>
