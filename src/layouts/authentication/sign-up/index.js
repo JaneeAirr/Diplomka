@@ -1,4 +1,5 @@
-import { useState } from "react";
+// src/layouts/authentication/components/SignUp.js
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
@@ -19,15 +20,17 @@ import bgSignIn from "assets/images/background-basic-auth.webp";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import db from "../../../firebase";
+import { useUser } from "../../../context/UserContext"; // Add this import
 
 function SignUp() {
   const [rememberMe, setRememberMe] = useState(true);
-  const [userRole, setUserRole] = useState("");
+  const [userRole, setUserRole] = useState("admin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ type: "", message: "", open: false });
+  const { setUser } = useUser(); // Get setUser from context
 
   const navigate = useNavigate();
   const auth = getAuth();
@@ -62,12 +65,10 @@ function SignUp() {
       const user = userCredential.user;
       console.log("Authenticated user ID:", user.uid);
 
-      const roleToSave = userRole || "admin";
-
       await setDoc(doc(db, "users", user.uid), {
         name: name,
         email: email,
-        role: roleToSave,
+        role: userRole,
         createdAt: serverTimestamp()
       });
       console.log("User document created successfully");
@@ -75,10 +76,11 @@ function SignUp() {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
         console.log("User registered successfully:", user);
+        setUser(userDoc.data()); // Set user in context
 
-        if (roleToSave === "student") {
+        if (userRole === "student") {
           navigate("/student/dashboard");
-        } else if (roleToSave === "teacher") {
+        } else if (userRole === "teacher") {
           navigate("/teacher/dashboard");
         } else {
           navigate("/admin/dashboard");

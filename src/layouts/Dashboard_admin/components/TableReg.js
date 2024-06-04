@@ -9,27 +9,38 @@ const RecentRegistrations = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const q = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(10));
-      const querySnapshot = await getDocs(q);
-      const usersList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setUsers(usersList);
+      try {
+        const q = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(10));
+        const querySnapshot = await getDocs(q);
+        const usersList = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt.toDate()
+        }));
+        setUsers(usersList);
+        console.log('Users fetched:', usersList);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
     };
 
     fetchUsers();
 
     const interval = setInterval(() => {
+      const now = new Date();
       setUsers((prevUsers) => {
-        const now = new Date();
-        return prevUsers.filter(user => {
-          const createdAt = user.createdAt?.toDate();
+        const filteredUsers = prevUsers.filter(user => {
+          const createdAt = new Date(user.createdAt);
           const diff = now - createdAt;
-          return diff < 3600000; // 1 hour = 3600000 milliseconds
+          console.log(`User: ${user.name}, CreatedAt: ${createdAt}, Now: ${now}, Diff: ${diff}ms`);
+          return diff < 3600000; // Keep user if registered within the last hour
         });
+        console.log('Filtered users:', filteredUsers);
+        return filteredUsers;
       });
-    }, 60000); // Check every minute
+    }, 10); // Check every minute
 
     return () => clearInterval(interval); // Cleanup the interval on component unmount
-
   }, []);
 
   return (
@@ -73,7 +84,7 @@ const RecentRegistrations = () => {
               <VuiBox component="td" color="white">{user.name}</VuiBox>
               <VuiBox component="td" color="white">{user.email}</VuiBox>
               <VuiBox component="td" color="white">{user.role}</VuiBox>
-              <VuiBox component="td" color="white">{user.createdAt?.toDate().toLocaleString()}</VuiBox>
+              <VuiBox component="td" color="white">{user.createdAt?.toLocaleString()}</VuiBox>
             </VuiBox>
           ))}
         </VuiBox>

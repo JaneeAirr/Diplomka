@@ -1,14 +1,17 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { BrowserRouter as Router } from "react-router-dom";
-import App from "./App";
-import { VisionUIControllerProvider } from "context";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { SnackbarProvider } from 'notistack';
+import App from './App';
+import { VisionUIControllerProvider } from 'context';
 
 ReactDOM.render(
   <Router>
-    <VisionUIControllerProvider>
-      <App />
-    </VisionUIControllerProvider>
+    <SnackbarProvider maxSnack={3}>
+      <VisionUIControllerProvider>
+        <App />
+      </VisionUIControllerProvider>
+    </SnackbarProvider>
   </Router>,
-  document.getElementById("root")
+  document.getElementById('root')
 );

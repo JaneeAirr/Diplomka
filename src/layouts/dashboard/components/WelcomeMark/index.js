@@ -1,10 +1,12 @@
 import React from "react";
-import { Card, Icon } from "@mui/material";
+import { Card } from "@mui/material";
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 import gif from "assets/images/cardimgfree.png";
+import { useUser } from "context/UserContext"; // Correct import path
 
-const WelcomeMark = ({ userName }) => {
+const WelcomeMark = () => {
+  const { user } = useUser();
   return (
     <Card
       sx={{
@@ -22,13 +24,12 @@ const WelcomeMark = ({ userName }) => {
             Welcome back,
           </VuiTypography>
           <VuiTypography color="white" variant="h3" fontWeight="bold" mb="18px">
-            {userName}
+            {user ? user.name : "Guest"}
           </VuiTypography>
           <VuiTypography color="text" variant="h6" fontWeight="regular" mb="auto">
             Приступим к работе!
           </VuiTypography>
         </VuiBox>
-
       </VuiBox>
     </Card>
   );
