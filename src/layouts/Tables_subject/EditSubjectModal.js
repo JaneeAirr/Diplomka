@@ -8,10 +8,6 @@ import db from "../../firebase";
 
 // Custom styles
 const StyledBox = styled(Box)(({ theme }) => ({
-  position: "absolute", // Keep the position absolute
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)", // Center the modal
   width: 400,
   bgcolor: "rgba(255, 255, 255, 0.15)", // Semi-transparent background
   boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.3)",
@@ -19,10 +15,7 @@ const StyledBox = styled(Box)(({ theme }) => ({
   borderRadius: "15px",
   backdropFilter: "blur(10px)", // Blur background
   animation: "fadeIn 0.5s", // Fade-in animation
-  "@keyframes fadeIn": {
-    "0%": { opacity: 0 },
-    "100%": { opacity: 1 },
-  },
+  position: "relative" // Ensure the close button is correctly positioned
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
