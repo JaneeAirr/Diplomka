@@ -3,7 +3,7 @@ import { Card } from "@mui/material";
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 import gif from "assets/images/cardimgfree.png";
-import { useUser } from "context/UserContext"; // Correct import path
+import { useUser } from "../../../../UserContext"; // Correct import path
 
 const WelcomeMark = () => {
   const { user } = useUser();

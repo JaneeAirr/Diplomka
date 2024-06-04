@@ -20,7 +20,7 @@ import bgSignIn from "assets/images/background-basic-auth.webp";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import db from "../../../firebase";
-import { useUser } from "../../../context/UserContext"; // Add this import
+import { useUser } from "../../../UserContext"; // Add this import
 
 function SignUp() {
   const [rememberMe, setRememberMe] = useState(true);
