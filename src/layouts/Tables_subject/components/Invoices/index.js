@@ -9,13 +9,17 @@ import AddSubjectModal from "../../../Tables_subject/AddSubjectModal";
 import EditSubjectModal from "../../../Tables_subject/EditSubjectModal";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { saveAs } from "file-saver";
+import { useSnackbar } from 'notistack';
 
-const useSubjectsTableData = (handleEditClick) => {
+const useSubjectsTableData = (handleEditClick, enqueueSnackbar) => {
   const [rows, setRows] = useState([]);
+  const [subjectsList, setSubjectsList] = useState([]);
 
   const fetchSubjects = useCallback(async () => {
     const subjectsSnapshot = await getDocs(collection(db, "subjects"));
     const subjectsList = subjectsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    setSubjectsList(subjectsList);
 
     const subjectsRows = subjectsList.map((subject) => ({
       name: (
@@ -52,8 +56,24 @@ const useSubjectsTableData = (handleEditClick) => {
     try {
       await deleteDoc(doc(db, "subjects", subjectId));
       fetchSubjects();
+      enqueueSnackbar('Subject deleted successfully!', {
+        variant: 'success',
+        autoHideDuration: 5000,
+        anchorOrigin: {
+          vertical: 'top',
+          horizontal: 'right',
+        }
+      });
     } catch (error) {
       console.error("Error deleting subject:", error);
+      enqueueSnackbar('Error deleting subject', {
+        variant: 'error',
+        autoHideDuration: 5000,
+        anchorOrigin: {
+          vertical: 'top',
+          horizontal: 'right',
+        }
+      });
     }
   };
 
@@ -71,17 +91,33 @@ const useSubjectsTableData = (handleEditClick) => {
 const SubjectsTable = () => {
   const [editSubjectModalOpen, setEditSubjectModalOpen] = useState(false);
   const [currentSubjectId, setCurrentSubjectId] = useState(null);
+  const { enqueueSnackbar } = useSnackbar();
 
   const handleEditClick = (subjectId) => {
     setCurrentSubjectId(subjectId);
     setEditSubjectModalOpen(true);
   };
 
-  const { columns, rows, fetchSubjects } = useSubjectsTableData(handleEditClick);
+  const { columns, rows, fetchSubjects } = useSubjectsTableData(handleEditClick, enqueueSnackbar);
   const [addSubjectModalOpen, setAddSubjectModalOpen] = useState(false);
 
   const handleAddSubject = () => {
     setAddSubjectModalOpen(true);
+  };
+
+  const exportToCSV = () => {
+    const csvRows = [];
+    const headers = ["Name", "Course"];
+    csvRows.push(headers.join(","));
+
+    subjectsList.forEach(subject => {
+      const values = [subject.name, subject.course];
+      csvRows.push(values.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'subjects.csv');
   };
 
   return (
@@ -91,9 +127,14 @@ const SubjectsTable = () => {
           <VuiTypography variant="h6" color="white">
             Subjects
           </VuiTypography>
-          <Button variant="contained" color="primary" onClick={handleAddSubject}>
-            Add Subject
-          </Button>
+          <VuiBox display="flex">
+            <Button variant="contained" color="primary" onClick={handleAddSubject}>
+              Add Subject
+            </Button>
+            <Button variant="contained" color="secondary" onClick={exportToCSV} sx={{ ml: 2 }}>
+              Export CSV
+            </Button>
+          </VuiBox>
         </VuiBox>
         <VuiBox>
           <Table columns={columns} rows={rows} />

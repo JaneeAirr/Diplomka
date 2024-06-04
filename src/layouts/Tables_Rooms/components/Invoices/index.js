@@ -1,16 +1,44 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 import db from "../../../../firebase";
-import { Box, TextField, List, ListItem, ListItemText, IconButton, Card } from "@mui/material";
+import { Box, TextField, ListItem, IconButton, Card } from "@mui/material";
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 import VuiButton from "components/VuiButton";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { styled } from "@mui/system";
+import { useSnackbar } from "notistack";
+import { CSVLink } from "react-csv";
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  "& .MuiInputBase-root": {
+    borderRadius: "20px",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    color: "#fff",
+    paddingLeft: "15px",
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#fff",
+  },
+  "& .MuiInputLabel-root": {
+    color: "#fff",
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: "#fff",
+  },
+}));
 
 function Rooms() {
   const [rooms, setRooms] = useState([]);
   const [newRoom, setNewRoom] = useState("");
   const [error, setError] = useState("");
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -26,27 +54,29 @@ function Rooms() {
   const handleAddRoom = async () => {
     if (newRoom.trim() === "") return;
 
-    // Check if the room already exists
     const existingRoom = rooms.find((room) => room.name.toLowerCase() === newRoom.toLowerCase());
     if (existingRoom) {
-      setError("Room already exists.");
+      enqueueSnackbar("Room already exists.", { variant: "warning" });
       return;
     }
 
     const roomsCollection = collection(db, "rooms");
     await addDoc(roomsCollection, { name: newRoom });
     setNewRoom("");
-    setError(""); // Clear the error message
+    setError("");
 
     const roomsSnapshot = await getDocs(roomsCollection);
     const roomsList = roomsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setRooms(roomsList);
+
+    enqueueSnackbar("Room added successfully.", { variant: "success" });
   };
 
   const handleDeleteRoom = async (id) => {
     const roomDoc = doc(db, "rooms", id);
     await deleteDoc(roomDoc);
     setRooms(rooms.filter((room) => room.id !== id));
+    enqueueSnackbar("Room deleted successfully.", { variant: "success" });
   };
 
   return (
@@ -55,16 +85,21 @@ function Rooms() {
         <VuiTypography variant="h6" fontWeight="medium" color="white">
           Rooms
         </VuiTypography>
-        <VuiBox>
-          <TextField
-            label="New Room"
+        <VuiBox display="flex" alignItems="center">
+          <StyledTextField
+            placeholder="New Room"
             value={newRoom}
             onChange={(e) => setNewRoom(e.target.value)}
-            sx={{ marginRight: 2, background: "white", borderRadius: "4px" }}
+            sx={{ marginRight: 2 }}
           />
-          <VuiButton variant="contained" color="info" size="small" onClick={handleAddRoom}>
+          <VuiButton variant="contained" color="info" size="small" onClick={handleAddRoom} sx={{ marginRight: 2 }}>
             ADD ROOM
           </VuiButton>
+          <CSVLink data={rooms.map((room) => ({ name: room.name }))} filename={"rooms.csv"} style={{ textDecoration: 'none' }}>
+            <VuiButton variant="contained" color="info" size="small">
+              Export CSV
+            </VuiButton>
+          </CSVLink>
         </VuiBox>
       </VuiBox>
       {error && (
@@ -78,9 +113,9 @@ function Rooms() {
         <VuiBox component="ul" display="flex" flexDirection="column" p={0} m={0}>
           {rooms.map((room) => (
             <ListItem key={room.id} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <ListItemText primary={room.name} sx={{ color: "white" }} />
+              <VuiTypography color="white">{room.name}</VuiTypography>
               <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteRoom(room.id)}>
-                <DeleteIcon sx={{ color: "white" }} />
+                <DeleteIcon sx={{ color: "red" }} />
               </IconButton>
             </ListItem>
           ))}
