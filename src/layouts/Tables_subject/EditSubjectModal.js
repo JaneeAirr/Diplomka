@@ -21,7 +21,7 @@ const StyledBox = styled(Box)(({ theme }) => ({
 const StyledTextField = styled(TextField)(({ theme }) => ({
   "& .MuiInputBase-root": {
     borderRadius: "10px",
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // Semi-transparent input background
+    backgroundColor: "rgb(15, 21, 53) !important",
     color: "#000",
   },
   "& .MuiOutlinedInput-notchedOutline": {
@@ -34,7 +34,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     borderColor: "#fff",
   },
   "& .MuiInputLabel-root": {
-    color: "#000", // Black label color
+    color: "#ffffff", // Black label color
     fontWeight: "bold", // Bold text
     fontSize: "0.9rem", // Smaller text size
   },

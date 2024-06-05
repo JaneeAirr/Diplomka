@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import db from "../../firebase";
-import Grid from "@mui/material/Grid";
-import { Card, Button, IconButton } from "@mui/material";
+import { Card, Button, IconButton, Box } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VuiBox from "components/VuiBox";
 import DashboardLayout from "../../examples/LayoutContainers/DashboardLayout";
@@ -11,13 +11,14 @@ import DashboardNavbar from "../../examples/Navbars/DashboardNavbar";
 import VuiTypography from "components/VuiTypography";
 import Table from "examples/Tables/Table";
 import AddGroupModal from "./AddGroupModalComponent";
+import EditGroupModal from "./EditGroupModalComponent";
 import AddStudentToGroupModal from "./AddStudenttoGroupModalComponent";
 import ShowGroupModal from "./ModalComponenttoDisplayStudents";
 
-const useGroupsTableData = (handleAddStudentToGroup, handleShowGroup) => {
+const useGroupsTableData = (handleAddStudentToGroup, handleShowGroup, handleEditGroup, fetchGroups) => {
   const [rows, setRows] = useState([]);
 
-  const fetchGroups = useCallback(async () => {
+  const fetchGroupData = useCallback(async () => {
     const groupsSnapshot = await getDocs(collection(db, "groups"));
     const groupsList = groupsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
@@ -32,10 +33,28 @@ const useGroupsTableData = (handleAddStudentToGroup, handleShowGroup) => {
           {group.size}
         </VuiTypography>
       ),
-      completion: (
-        <VuiTypography variant="button" color="white" fontWeight="medium">
-          {Math.floor((group.students.length / group.size) * 100)}%
+      course: (
+        <VuiTypography variant="button" color="white" fontWeight="medium" textAlign="center">
+          {group.course}
         </VuiTypography>
+      ),
+      completion: (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
+          <VuiTypography variant="button" color="white" fontWeight="medium" textAlign="center">
+            {Math.floor((group.students.length / group.size) * 100)}%
+          </VuiTypography>
+          <Box sx={{ width: '400%', mt: 1 }}>
+            <Box sx={{ position: 'relative', width: '100%', height: 6, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 3 }}>
+              <Box sx={{
+                position: 'absolute',
+                width: `${(group.students.length / group.size) * 100}%`,
+                height: '100%',
+                backgroundColor: '#1E88E5',
+                borderRadius: 3,
+              }} />
+            </Box>
+          </Box>
+        </Box>
       ),
       action: (
         <div>
@@ -44,6 +63,9 @@ const useGroupsTableData = (handleAddStudentToGroup, handleShowGroup) => {
           </IconButton>
           <IconButton color="error" onClick={() => handleDeleteGroup(group.id)}>
             <DeleteIcon />
+          </IconButton>
+          <IconButton color="primary" onClick={() => handleEditGroup(group.id)}>
+            <EditIcon />
           </IconButton>
           <Button variant="outlined" color="info" onClick={() => handleAddStudentToGroup(group.id)}>
             Add Student
@@ -54,16 +76,16 @@ const useGroupsTableData = (handleAddStudentToGroup, handleShowGroup) => {
     }));
 
     setRows(groupsRows);
-  }, [handleAddStudentToGroup, handleShowGroup]);
+  }, [handleAddStudentToGroup, handleShowGroup, handleEditGroup]);
 
   useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+    fetchGroupData();
+  }, [fetchGroupData, fetchGroups]);
 
   const handleDeleteGroup = async (groupId) => {
     try {
       await deleteDoc(doc(db, "groups", groupId));
-      fetchGroups();
+      fetchGroupData();
     } catch (error) {
       console.error("Error deleting group:", error);
     }
@@ -73,20 +95,27 @@ const useGroupsTableData = (handleAddStudentToGroup, handleShowGroup) => {
     columns: [
       { name: "name", align: "left" },
       { name: "size", align: "left" },
-      { name: "completion", align: "center" },
+      { name: "course", align: "center" },  // Center align course column
+      { name: "completion", align: "center" },  // Center align completion column
       { name: "action", align: "center" },
     ],
     rows,
-    fetchGroups,
+    fetchGroupData,
   };
 };
 
 const GroupsTable = () => {
   const [addGroupModalOpen, setAddGroupModalOpen] = useState(false);
+  const [editGroupModalOpen, setEditGroupModalOpen] = useState(false);
   const [addStudentModalOpen, setAddStudentModalOpen] = useState(false);
   const [showGroupModalOpen, setShowGroupModalOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [selectedGroupName, setSelectedGroupName] = useState("");
+
+  const fetchGroups = useCallback(async () => {
+    const groupsSnapshot = await getDocs(collection(db, "groups"));
+    return groupsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  }, []);
 
   const handleAddStudentToGroup = useCallback((groupId) => {
     setSelectedGroupId(groupId);
@@ -99,7 +128,12 @@ const GroupsTable = () => {
     setShowGroupModalOpen(true);
   }, []);
 
-  const { columns, rows, fetchGroups } = useGroupsTableData(handleAddStudentToGroup, handleShowGroup);
+  const handleEditGroup = useCallback((groupId) => {
+    setSelectedGroupId(groupId);
+    setEditGroupModalOpen(true);
+  }, []);
+
+  const { columns, rows, fetchGroupData } = useGroupsTableData(handleAddStudentToGroup, handleShowGroup, handleEditGroup, fetchGroups);
 
   const handleAddGroup = () => {
     setAddGroupModalOpen(true);
@@ -123,6 +157,7 @@ const GroupsTable = () => {
               "& th": {
                 borderBottom: ({ borders: { borderWidth }, palette: { grey } }) =>
                   `${borderWidth[1]} solid ${grey[700]}`,
+                textAlign: 'center',  // Center align the table headers
               },
               "& .MuiTableRow-root:not(:last-child)": {
                 "& td": {
@@ -136,11 +171,12 @@ const GroupsTable = () => {
           </VuiBox>
         </Card>
       </VuiBox>
-      <AddGroupModal open={addGroupModalOpen} handleClose={() => setAddGroupModalOpen(false)} fetchGroups={fetchGroups} />
+      <AddGroupModal open={addGroupModalOpen} handleClose={() => setAddGroupModalOpen(false)} fetchGroups={fetchGroupData} />
+      <EditGroupModal open={editGroupModalOpen} handleClose={() => setEditGroupModalOpen(false)} fetchGroups={fetchGroupData} groupId={selectedGroupId} />
       <AddStudentToGroupModal
         open={addStudentModalOpen}
         handleClose={() => setAddStudentModalOpen(false)}
-        fetchGroups={fetchGroups}
+        fetchGroups={fetchGroupData}
         groupId={selectedGroupId}
       />
       <ShowGroupModal
@@ -148,6 +184,7 @@ const GroupsTable = () => {
         handleClose={() => setShowGroupModalOpen(false)}
         groupId={selectedGroupId}
         groupName={selectedGroupName}
+        fetchGroups={fetchGroupData}
       />
     </DashboardLayout>
   );

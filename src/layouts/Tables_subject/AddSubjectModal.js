@@ -27,7 +27,7 @@ const StyledBox = styled(Box)(({ theme }) => ({
 const StyledTextField = styled(TextField)(({ theme }) => ({
   "& .MuiInputBase-root": {
     borderRadius: "10px",
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // Полупрозрачный фон инпута
+    backgroundColor: "rgb(15, 21, 53) !important",
     color: "#000",
   },
   "& .MuiOutlinedInput-notchedOutline": {

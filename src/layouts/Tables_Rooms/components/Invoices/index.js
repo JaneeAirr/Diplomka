@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 import db from "../../../../firebase";
-import { Box, TextField, ListItem, IconButton, Card } from "@mui/material";
+import { TextField, ListItem, IconButton, Card } from "@mui/material";
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 import VuiButton from "components/VuiButton";
@@ -13,7 +13,8 @@ import { CSVLink } from "react-csv";
 const StyledTextField = styled(TextField)(({ theme }) => ({
   "& .MuiInputBase-root": {
     borderRadius: "20px",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgb(15, 21, 53) !important",
+    color: "#fff",
     paddingLeft: "15px",
   },
   "& .MuiOutlinedInput-notchedOutline": {
@@ -22,15 +23,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   "&:hover .MuiOutlinedInput-notchedOutline": {
     borderColor: "rgba(255, 255, 255, 0.2)",
   },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#fff",
-  },
-  "& .MuiInputLabel-root": {
-    backgroundColor:"rgba(255, 255, 255, 0.1)",
-  },
-  "& .MuiInputLabel-root.Mui-focused": {
-    backgroundColor:"rgba(255, 255, 255, 0.1)",
-  },
+
 }));
 
 function Rooms() {
@@ -55,7 +48,13 @@ function Rooms() {
 
     const existingRoom = rooms.find((room) => room.name.toLowerCase() === newRoom.toLowerCase());
     if (existingRoom) {
-      enqueueSnackbar("Room already exists.", { variant: "warning" });
+      enqueueSnackbar("Room already exists.", {
+        variant: "warning",
+        anchorOrigin: {
+          vertical: 'top',
+          horizontal: 'right',
+        },
+      });
       return;
     }
 
@@ -68,14 +67,26 @@ function Rooms() {
     const roomsList = roomsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     setRooms(roomsList);
 
-    enqueueSnackbar("Room added successfully.", { variant: "success" });
+    enqueueSnackbar("Room added successfully.", {
+      variant: "success",
+      anchorOrigin: {
+        vertical: 'top',
+        horizontal: 'right',
+      },
+    });
   };
 
   const handleDeleteRoom = async (id) => {
     const roomDoc = doc(db, "rooms", id);
     await deleteDoc(roomDoc);
     setRooms(rooms.filter((room) => room.id !== id));
-    enqueueSnackbar("Room deleted successfully.", { variant: "success" });
+    enqueueSnackbar("Room deleted successfully.", {
+      variant: "success",
+      anchorOrigin: {
+        vertical: 'top',
+        horizontal: 'right',
+      },
+    });
   };
 
   return (
