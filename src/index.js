@@ -10,7 +10,7 @@ import { UserProvider } from './UserContext';
 ReactDOM.render(
   <Router>
     <UserProvider>
-      <SnackbarProvider maxSnack={3}>
+      <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
         <VisionUIControllerProvider>
           <App />
         </VisionUIControllerProvider>

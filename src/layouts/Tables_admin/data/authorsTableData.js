@@ -1,32 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { collection, getDocs, doc, deleteDoc, getDoc, query, where } from "firebase/firestore";
+import { useSnackbar } from 'notistack';
 import db from "../../../firebase"; // Ensure this path is correct
 
 // Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
-import VuiAvatar from "components/VuiAvatar";
 import VuiButton from "components/VuiButton";
 
-// Placeholder image
-import avatar from "assets/images/avatar1.png";
-
-function Author({ image, name }) {
-  return (
-    <VuiBox display="flex" alignItems="center" px={1} py={0.5}>
-      <VuiBox mr={2}>
-        <img src={image} alt={name} width="40" height="40" />
-      </VuiBox>
-      <VuiBox display="flex" flexDirection="column">
-        <VuiTypography variant="button" color="white" fontWeight="medium">
-          {name}
-        </VuiTypography>
-      </VuiBox>
-    </VuiBox>
-  );
-}
-
 export default function useAuthorsTableData() {
+  const { enqueueSnackbar } = useSnackbar();
   const [rows, setRows] = useState([]);
 
   const fetchStudents = useCallback(async () => {
@@ -52,6 +35,12 @@ export default function useAuthorsTableData() {
           }
         }
 
+        // Check if createdAt field exists and convert it
+        let registeredDate = "N/A";
+        if (student.createdAt && student.createdAt.seconds) {
+          registeredDate = new Date(student.createdAt.seconds * 1000).toLocaleDateString();
+        }
+
         return {
           id: student.id,
           name: (
@@ -71,7 +60,7 @@ export default function useAuthorsTableData() {
           ),
           registered: (
             <VuiTypography variant="caption" color="white" fontWeight="medium">
-              {student.registered ? new Date(student.registered.seconds * 1000).toLocaleDateString() : "N/A"}
+              {registeredDate}
             </VuiTypography>
           ),
           action: (
@@ -101,8 +90,10 @@ export default function useAuthorsTableData() {
     try {
       await deleteDoc(doc(db, "users", id));
       fetchStudents();
+      enqueueSnackbar('Student successfully deleted', { variant: 'success' });
     } catch (error) {
       console.error("Error deleting student:", error);
+      enqueueSnackbar('Error deleting student', { variant: 'error' });
     }
   };
 
