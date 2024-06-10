@@ -1,175 +1,120 @@
-import { useState, useEffect } from "react";
-import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
-import db from "../../../../firebase";
-import PropTypes from "prop-types";
-import Card from "@mui/material/Card";
-import Icon from "@mui/material/Icon";
+import React, { useState, useEffect, useCallback } from "react";
+import { collection, getDocs, doc, deleteDoc, updateDoc, query, where } from "firebase/firestore";
+import { useSnackbar } from 'notistack';
+import db from "../../../../firebase"; // Ensure this path is correct
+
 import VuiBox from "components/VuiBox";
 import VuiTypography from "components/VuiTypography";
 import VuiButton from "components/VuiButton";
-import linearGradient from "assets/theme/functions/linearGradient";
-import colors from "assets/theme/base/colors";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
-import { styled } from "@mui/system";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Chip from "@mui/material/Chip";
-import Box from "@mui/material/Box";
+import { Modal, Icon, Box, Button, styled, TextField, Chip, Autocomplete, Card } from "@mui/material";
+import Table from "examples/Tables/Table";
+import { Typography } from "@mui/material";
 
-// Custom styled components
-const CustomDialog = styled(Dialog)(({ theme }) => ({
-  "& .MuiPaper-root": {
+const StyledBox = styled(Box)(({ theme }) => ({
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 600,
+  bgcolor: "rgba(255, 255, 255, 0.15)",
+  boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.3)",
+  p: 4,
+  borderRadius: "15px",
+  backdropFilter: "blur(10px)",
+  animation: "fadeIn 0.5s",
+  "@keyframes fadeIn": {
+    "0%": { opacity: 0 },
+    "100%": { opacity: 1 },
+  },
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  backgroundColor: "#007BFF",
+  color: "#fff",
+  "&:hover": {
+    backgroundColor: "#0056b3",
+  },
+  marginTop: theme.spacing(2),
+  padding: theme.spacing(1.5),
+  borderRadius: "10px",
+  fontSize: "1rem",
+}));
+
+const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: "10px",
     backgroundColor: "rgb(15, 21, 53) !important",
-    borderRadius: "12px",
-    padding: theme.spacing(2),
+    color: "#fff",
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: "rgba(255, 255, 255, 0.5)",
+    },
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: "#fff",
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: "#fff",
+    },
+    '& .MuiInputLabel-root': {
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: "0.9rem",
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: "#007BFF",
+    },
+    '& .MuiSelect-icon': {
+      color: "#fff",
+    },
   },
+  '& .MuiAutocomplete-endAdornment': {
+    '& .MuiAutocomplete-popupIndicator': {
+      color: "#fff",
+    },
+  },
+  '& .MuiInputBase-input': {
+    textAlign: 'center',
+    fontSize: '0.8rem',
+  }
 }));
 
-const CustomDialogTitle = styled(DialogTitle)(({ theme }) => ({
-  color: theme.palette.primary.main,
-  fontWeight: "bold",
-  textAlign: "center",
-}));
-
-const CustomDialogContent = styled(DialogContent)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-}));
-
-const CustomDialogContentText = styled(DialogContentText)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(2),
-  textAlign: "center",
-}));
-
-const CustomTextField = styled(TextField)(({ theme }) => ({
-  margin: theme.spacing(1, 0),
-  "& .MuiInputBase-root": {
-    color: theme.palette.text.primary,
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: "10px",
     backgroundColor: "rgb(15, 21, 53) !important",
-    borderRadius: "8px",
-    padding: theme.spacing(1),
-  },
-  "& .MuiInputLabel-root": {
-    color: theme.palette.text.primary,
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: theme.palette.text.primary,
-  },
-}));
-
-const CustomDialogActions = styled(DialogActions)(({ theme }) => ({
-  justifyContent: "center",
-  padding: theme.spacing(2, 0),
-}));
-
-const CustomFormControl = styled(FormControl)(({ theme }) => ({
-  width: "100%",
-  margin: theme.spacing(1, 0),
-  "& .MuiInputLabel-root": {
-    color: theme.palette.text.primary,
-  },
-  "& .MuiInputBase-root": {
-    color: theme.palette.text.primary,
-    backgroundColor: "rgb(15, 21, 53) !important",
-    borderRadius: "8px",
-    padding: theme.spacing(1),
-  },
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: theme.palette.text.primary,
-  },
-  "& .MuiSelect-icon": {
-    color: theme.palette.text.primary,
+    color: "#fff",
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: "rgba(255, 255, 255, 0.5)",
+    },
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+      borderColor: "#fff",
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: "#fff",
+    },
+    '& .MuiInputLabel-root': {
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: "0.9rem",
+    },
+    '& .MuiInputLabel-root.Mui-focused': {
+      color: "#007BFF",
+    },
+    '& .MuiSelect-icon': {
+      color: "#fff",
+    },
   },
 }));
 
-function Bill({ id, name, email, subject, onEdit }) {
-  const { gradients } = colors;
-  const { bill } = gradients;
+const StyledChip = styled(Chip)(({ theme }) => ({
+  backgroundColor: "rgb(0, 117, 255) !important",
+  color: "#fff",
+  '& .MuiChip-deleteIcon': {
+    color: "#fff",
+  },
+}));
 
-  return (
-    <VuiBox
-      component="li"
-      display="flex"
-      justifyContent="space-between"
-      alignItems="flex-start"
-      sx={{ background: linearGradient(bill.main, bill.state, bill.deg) }}
-      borderRadius="lg"
-      p="24px"
-      mb="24px"
-      mt="20px"
-    >
-      <VuiBox width="100%" display="flex" flexDirection="column">
-        <VuiBox
-          display="flex"
-          justifyContent="space-between"
-          alignItems={{ xs: "flex-start", sm: "center" }}
-          flexDirection={{ xs: "column", sm: "row" }}
-          mb="5px"
-        >
-          <VuiTypography
-            variant="button"
-            color="white"
-            fontWeight="medium"
-            textTransform="capitalize"
-          >
-            {name}
-          </VuiTypography>
-
-          <VuiBox
-            display="flex"
-            alignItems="center"
-            mt={{ xs: 2, sm: 0 }}
-            ml={{ xs: -1.5, sm: 0 }}
-            sx={({ breakpoints }) => ({
-              [breakpoints.only("sm")]: {
-                flexDirection: "column",
-              },
-            })}
-          >
-            <VuiBox mr={1}>
-              <VuiButton variant="text" color="text" onClick={() => onEdit(id)}>
-                <Icon sx={{ mr: "4px" }}>edit</Icon>&nbsp;EDIT
-              </VuiButton>
-            </VuiBox>
-          </VuiBox>
-        </VuiBox>
-        <VuiBox mb={1} lineHeight={0}>
-          <VuiTypography variant="caption" color="text">
-            Email Address:&nbsp;&nbsp;&nbsp;
-            <VuiTypography variant="caption" fontWeight="regular" color="text">
-              {email}
-            </VuiTypography>
-          </VuiTypography>
-        </VuiBox>
-        <VuiTypography variant="caption" color="text">
-          Subject:&nbsp;&nbsp;&nbsp;
-          <VuiTypography variant="caption" fontWeight="regular" color="text">
-            {subject ? subject.join(", ") : "Not assigned"}
-          </VuiTypography>
-        </VuiTypography>
-      </VuiBox>
-    </VuiBox>
-  );
-}
-
-Bill.propTypes = {
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  email: PropTypes.string.isRequired,
-  subject: PropTypes.arrayOf(PropTypes.string),
-  onEdit: PropTypes.func.isRequired,
-};
-
-function BillingInformation() {
+function TeachersTable() {
+  const { enqueueSnackbar } = useSnackbar();
   const [teachers, setTeachers] = useState([]);
   const [editTeacher, setEditTeacher] = useState(null);
   const [subject, setSubject] = useState([]);
@@ -177,39 +122,61 @@ function BillingInformation() {
   const [subjects, setSubjects] = useState([]);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchTeachers = async () => {
-      const usersCollection = collection(db, "users");
-      const usersSnapshot = await getDocs(usersCollection);
-      const usersList = usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      const teachersList = usersList.filter((user) => user.role === "teacher");
-      setTeachers(teachersList);
-    };
-
-    const fetchSubjects = async () => {
-      const subjectsCollection = collection(db, "subjects");
-      const subjectsSnapshot = await getDocs(subjectsCollection);
-      const subjectsList = subjectsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setSubjects(subjectsList);
-    };
-
-    fetchTeachers();
-    fetchSubjects();
+  const fetchTeachers = useCallback(async () => {
+    const usersCollection = collection(db, "users");
+    const usersSnapshot = await getDocs(usersCollection);
+    const usersList = usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const teachersList = usersList.filter((user) => user.role === "teacher");
+    setTeachers(teachersList);
   }, []);
+
+  useEffect(() => {
+    fetchTeachers();
+  }, [fetchTeachers]);
+
+  useEffect(() => {
+    if (course) {
+      const fetchSubjects = async () => {
+        const q = query(collection(db, "subjects"), where("course", "==", course));
+        const subjectsSnapshot = await getDocs(q);
+        const subjectsList = subjectsSnapshot.docs.map((doc) => ({ id: doc.id, name: doc.data().name }));
+        setSubjects(subjectsList);
+      };
+      fetchSubjects();
+    } else {
+      setSubjects([]);
+    }
+  }, [course]);
+
+  useEffect(() => {
+    if (editTeacher) {
+      setCourse(editTeacher.course || "");
+      setSubject(editTeacher.subject || []);
+    }
+  }, [editTeacher]);
 
   const handleEdit = (id) => {
     const teacher = teachers.find((t) => t.id === id);
     setEditTeacher(teacher);
-    setSubject(teacher.subject || []);
-    setCourse(teacher.course || "");
     setOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteDoc(doc(db, "users", id));
+      fetchTeachers();
+      enqueueSnackbar('Teacher successfully deleted', { variant: 'success' });
+    } catch (error) {
+      console.error("Error deleting teacher:", error);
+      enqueueSnackbar('Error deleting teacher', { variant: 'error' });
+    }
   };
 
   const handleClose = () => {
     setOpen(false);
     setEditTeacher(null);
-    setSubject([]);
     setCourse("");
+    setSubject([]);
   };
 
   const handleSave = async () => {
@@ -217,93 +184,120 @@ function BillingInformation() {
       const teacherDoc = doc(db, "users", editTeacher.id);
       await updateDoc(teacherDoc, { subject, course });
       setTeachers(teachers.map((t) => (t.id === editTeacher.id ? { ...t, subject, course } : t)));
+      enqueueSnackbar('Subjects and course successfully assigned', { variant: 'success' });
       handleClose();
+    } else {
+      enqueueSnackbar('Failed to assign subjects and course', { variant: 'error' });
     }
   };
 
-  const availableSubjects = subjects.filter((subj) => subj.course === course);
-
-  const handleSubjectChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setSubject(
-      typeof value === 'string' ? value.split(',') : value,
-    );
+  const handleSubjectChange = (event, newValue) => {
+    setSubject(newValue);
   };
 
+  const columns = [
+    { name: "name", align: "left" },
+    { name: "email", align: "left" },
+    { name: "course", align: "left" },
+    { name: "subjects", align: "left" },
+    { name: "actions", align: "center" }
+  ];
+
+  const rows = teachers.map((teacher) => ({
+    name: (
+      <VuiTypography variant="button" color="white" fontWeight="medium">
+        {teacher.name}
+      </VuiTypography>
+    ),
+    email: (
+      <VuiTypography variant="caption" color="text">
+        {teacher.email}
+      </VuiTypography>
+    ),
+    course: (
+      <VuiTypography variant="caption" color="text">
+        {teacher.course || "N/A"}
+      </VuiTypography>
+    ),
+    subjects: (
+      <VuiTypography variant="caption" color="text">
+        {teacher.subject ? teacher.subject.map((subj) => subj.name).join(", ") : "Not assigned"}
+      </VuiTypography>
+    ),
+    actions: (
+      <VuiBox display="flex" justifyContent="center" gap={1}>
+        <VuiButton variant="text" color="text" onClick={() => handleEdit(teacher.id)}>
+          <Icon>edit</Icon>
+        </VuiButton>
+        <VuiButton variant="text" color="text" onClick={() => handleDelete(teacher.id)}>
+          <Icon>delete</Icon>
+        </VuiButton>
+      </VuiBox>
+    )
+  }));
+
   return (
-    <Card id="delete-account">
-      <VuiBox>
-        <VuiTypography variant="lg" color="white" fontWeight="bold">
-          Учителя
+    <Card>
+      <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb="22px">
+        <VuiTypography variant="lg" color="white">
+          Teachers Table
         </VuiTypography>
       </VuiBox>
-      <VuiBox>
-        <VuiBox component="ul" display="flex" flexDirection="column" p={0} m={0}>
-          {teachers.map((teacher) => (
-            <Bill
-              key={teacher.id}
-              id={teacher.id}
-              name={teacher.name}
-              email={teacher.email}
-              subject={teacher.subject}
-              onEdit={handleEdit}
-            />
-          ))}
-        </VuiBox>
+      <VuiBox
+        sx={{
+          "& th": {
+            borderBottom: ({ borders: { borderWidth }, palette: { grey } }) =>
+              `${borderWidth[1]} solid ${grey[700]}`,
+          },
+          "& .MuiTableRow-root:not(:last-child)": {
+            "& td": {
+              borderBottom: ({ borders: { borderWidth }, palette: { grey } }) =>
+                `${borderWidth[1]} solid ${grey[700]}`,
+            },
+          },
+        }}
+      >
+        <Table columns={columns} rows={rows} />
       </VuiBox>
-      <CustomDialog open={open} onClose={handleClose}>
-        <CustomDialogTitle>Назначить предмет для {editTeacher?.name}</CustomDialogTitle>
-        <CustomDialogContent>
-          <CustomDialogContentText>
-            Чтобы назначить предмет для {editTeacher?.name}, выберите курс и предметы из списка ниже.
-          </CustomDialogContentText>
-          <CustomFormControl fullWidth>
-            <InputLabel>Course</InputLabel>
-            <Select
-              value={course}
-              onChange={(e) => setCourse(e.target.value)}
-              fullWidth
-            >
-              <MenuItem value="Course1">Course1</MenuItem>
-              <MenuItem value="Course2">Course2</MenuItem>
-              <MenuItem value="Course3">Course3</MenuItem>
-            </Select>
-          </CustomFormControl>
-          <CustomFormControl fullWidth>
-            <InputLabel>Subjects</InputLabel>
-            <Select
-              multiple
-              value={subject}
-              onChange={handleSubjectChange}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} onDelete={() => setSubject(subject.filter((s) => s !== value))} />
-                  ))}
-                </Box>
-              )}
-            >
-              {availableSubjects.map((subj) => (
-                <MenuItem key={subj.id} value={subj.name}>
-                  {subj.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </CustomFormControl>
-        </CustomDialogContent>
-        <CustomDialogActions>
-          <VuiButton onClick={handleClose} color="secondary">
-            Отмена
-          </VuiButton>
-          <VuiButton onClick={handleSave} color="primary">
+      <Modal open={open} onClose={handleClose}>
+        <StyledBox>
+          <Typography variant="h5" align="center" gutterBottom color="white">
+            Назначить предмет для {editTeacher?.name}
+          </Typography>
+          <StyledTextField
+            fullWidth
+            label="Course"
+            value={course}
+            onChange={(e) => setCourse(e.target.value)}
+            margin="normal"
+            variant="outlined"
+          />
+          <StyledAutocomplete
+            multiple
+            options={subjects.filter(subject => !editTeacher?.subject?.find(s => s.id === subject.id))}
+            getOptionLabel={(option) => option.name}
+            value={subject}
+            onChange={handleSubjectChange}
+            renderTags={(tagValue, getTagProps) =>
+              tagValue.map((option, index) => (
+                <StyledChip label={option.name} {...getTagProps({ index })} />
+              ))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Subjects"
+                variant="outlined"
+              />
+            )}
+          />
+          <StyledButton variant="contained" onClick={handleSave} fullWidth>
             Сохранить
-          </VuiButton>
-        </CustomDialogActions>
-      </CustomDialog>
+          </StyledButton>
+        </StyledBox>
+      </Modal>
     </Card>
   );
 }
 
-export default BillingInformation;
+export default TeachersTable;
