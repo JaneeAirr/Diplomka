@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { collection, getDocs, doc, deleteDoc, getDoc, query, where } from "firebase/firestore";
 import { useSnackbar } from 'notistack';
 import db from "../../../firebase"; // Ensure this path is correct
+import { saveAs } from "file-saver";
 
 // Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
@@ -11,6 +12,7 @@ import VuiButton from "components/VuiButton";
 export default function useAuthorsTableData() {
   const { enqueueSnackbar } = useSnackbar();
   const [rows, setRows] = useState([]);
+  const [studentsList, setStudentsList] = useState([]);
 
   const fetchStudents = useCallback(async () => {
     try {
@@ -19,6 +21,7 @@ export default function useAuthorsTableData() {
       const studentsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
       console.log("Fetched students:", studentsList); // Debugging log
+      setStudentsList(studentsList);
 
       // Fetch group information for each student
       const studentRows = await Promise.all(studentsList.map(async (student) => {
@@ -97,6 +100,40 @@ export default function useAuthorsTableData() {
     }
   };
 
+  const exportToCSV = () => {
+    const csvRows = [];
+    const headers = ["Name", "Email", "Group", "Registered"];
+    csvRows.push(headers.join(","));
+
+    studentsList.forEach(student => {
+      let groupName = "N/A";
+      if (student.group) {
+        try {
+          const groupDocRef = doc(db, "groups", student.group);
+          const groupDoc = getDoc(groupDocRef);
+          if (groupDoc.exists()) {
+            groupName = groupDoc.data().name || "N/A";
+          }
+        } catch (error) {
+          console.error("Error fetching group data:", error);
+        }
+      }
+
+      const registeredDate = student.createdAt ? new Date(student.createdAt.seconds * 1000).toLocaleDateString() : "N/A";
+      const values = [
+        `"${student.name}"`,
+        `"${student.email}"`,
+        `"${groupName}"`,
+        `"${registeredDate}"`
+      ];
+      csvRows.push(values.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'students.csv');
+  };
+
   return {
     columns: [
       { name: "name", align: "left" },
@@ -105,6 +142,7 @@ export default function useAuthorsTableData() {
       { name: "registered", align: "center" },
       { name: "action", align: "center" },
     ],
-    rows
+    rows,
+    exportToCSV // Expose the exportToCSV function
   };
 }

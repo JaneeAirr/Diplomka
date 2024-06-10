@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, getDoc } from "firebase/firestore"; // Ensure getDoc and doc are imported correctly
 import db from "../../firebase";
 import { Card, Button, IconButton, Box } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -14,13 +14,28 @@ import AddGroupModal from "./AddGroupModalComponent";
 import EditGroupModal from "./EditGroupModalComponent";
 import AddStudentToGroupModal from "./AddStudenttoGroupModalComponent";
 import ShowGroupModal from "./ModalComponenttoDisplayStudents";
+import { saveAs } from "file-saver";
+import { useSnackbar } from 'notistack';
 
 const useGroupsTableData = (handleAddStudentToGroup, handleShowGroup, handleEditGroup, fetchGroups) => {
   const [rows, setRows] = useState([]);
+  const [groupsList, setGroupsList] = useState([]);
 
   const fetchGroupData = useCallback(async () => {
     const groupsSnapshot = await getDocs(collection(db, "groups"));
-    const groupsList = groupsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const groupsList = await Promise.all(
+      groupsSnapshot.docs.map(async (groupDoc) => {
+        const groupData = groupDoc.data();
+        const students = groupData.students || [];
+        const studentsDocs = await Promise.all(
+          students.map((studentId) => getDoc(doc(db, "users", studentId)))
+        );
+        const studentsList = studentsDocs.map((doc) => doc.data().name).join(", ");
+        return { id: groupDoc.id, ...groupData, studentsList };
+      })
+    );
+
+    setGroupsList(groupsList);
 
     const groupsRows = groupsList.map((group) => ({
       name: (
@@ -95,11 +110,12 @@ const useGroupsTableData = (handleAddStudentToGroup, handleShowGroup, handleEdit
     columns: [
       { name: "name", align: "left" },
       { name: "size", align: "left" },
-      { name: "course", align: "center" },  // Center align course column
-      { name: "completion", align: "center" },  // Center align completion column
+      { name: "course", align: "center" },
+      { name: "completion", align: "center" },
       { name: "action", align: "center" },
     ],
     rows,
+    groupsList,
     fetchGroupData,
   };
 };
@@ -111,6 +127,7 @@ const GroupsTable = () => {
   const [showGroupModalOpen, setShowGroupModalOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [selectedGroupName, setSelectedGroupName] = useState("");
+  const { enqueueSnackbar } = useSnackbar();
 
   const fetchGroups = useCallback(async () => {
     const groupsSnapshot = await getDocs(collection(db, "groups"));
@@ -133,10 +150,30 @@ const GroupsTable = () => {
     setEditGroupModalOpen(true);
   }, []);
 
-  const { columns, rows, fetchGroupData } = useGroupsTableData(handleAddStudentToGroup, handleShowGroup, handleEditGroup, fetchGroups);
+  const { columns, rows, groupsList, fetchGroupData } = useGroupsTableData(handleAddStudentToGroup, handleShowGroup, handleEditGroup, fetchGroups);
 
   const handleAddGroup = () => {
     setAddGroupModalOpen(true);
+  };
+
+  const exportToCSV = () => {
+    const csvRows = [];
+    const headers = ["Group Name", "Student Names", "Total Students", "Completion"];
+    csvRows.push(headers.join(","));
+
+    groupsList.forEach(group => {
+      const values = [
+        group.name,
+        group.studentsList,
+        group.students.length,
+        `${Math.floor((group.students.length / group.size) * 100)}%`
+      ];
+      csvRows.push(values.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'groups.csv');
   };
 
   return (
@@ -148,16 +185,21 @@ const GroupsTable = () => {
             <VuiTypography variant="lg" color="white">
               Groups Table
             </VuiTypography>
-            <Button variant="contained" color="primary" onClick={handleAddGroup}>
-              Add Group
-            </Button>
+            <VuiBox display="flex">
+              <Button variant="contained" color="primary" onClick={handleAddGroup}>
+                Add Group
+              </Button>
+              <Button variant="contained" color="secondary" onClick={exportToCSV} sx={{ ml: 2 }}>
+                Export CSV
+              </Button>
+            </VuiBox>
           </VuiBox>
           <VuiBox
             sx={{
               "& th": {
                 borderBottom: ({ borders: { borderWidth }, palette: { grey } }) =>
                   `${borderWidth[1]} solid ${grey[700]}`,
-                textAlign: 'center',  // Center align the table headers
+                textAlign: 'center',
               },
               "& .MuiTableRow-root:not(:last-child)": {
                 "& td": {

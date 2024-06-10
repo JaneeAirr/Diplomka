@@ -9,6 +9,7 @@ import VuiButton from "components/VuiButton";
 import { Modal, Icon, Box, Button, styled, TextField, Chip, Autocomplete, Card } from "@mui/material";
 import Table from "examples/Tables/Table";
 import { Typography } from "@mui/material";
+import { saveAs } from "file-saver"; // For exporting CSV
 
 const StyledBox = styled(Box)(({ theme }) => ({
   position: "absolute",
@@ -195,6 +196,26 @@ function TeachersTable() {
     setSubject(newValue);
   };
 
+  const exportToCSV = () => {
+    const csvRows = [];
+    const headers = ["Name", "Email", "Course", "Subjects"];
+    csvRows.push(headers.join(","));
+
+    teachers.forEach(teacher => {
+      const values = [
+        `"${teacher.name}"`,
+        `"${teacher.email}"`,
+        `"${teacher.course || "N/A"}"`,
+        `"${teacher.subject ? teacher.subject.map((subj) => subj.name).join(", ") : "Not assigned"}"`
+      ];
+      csvRows.push(values.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'teachers.csv');
+  };
+
   const columns = [
     { name: "name", align: "left" },
     { name: "email", align: "left" },
@@ -242,6 +263,9 @@ function TeachersTable() {
         <VuiTypography variant="lg" color="white">
           Teachers Table
         </VuiTypography>
+        <Button variant="contained" color="primary" onClick={exportToCSV}>
+          Export CSV
+        </Button>
       </VuiBox>
       <VuiBox
         sx={{

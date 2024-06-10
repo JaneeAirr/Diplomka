@@ -4,6 +4,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
 import { useSnackbar } from 'notistack';
 import db from "../../firebase";
+import { saveAs } from "file-saver";
 
 const StyledBox = styled(Box)(({ theme }) => ({
   position: "absolute",
@@ -101,6 +102,21 @@ const ShowGroupModal = ({ open, handleClose, groupId, groupName }) => {
     }
   };
 
+  const exportToCSV = () => {
+    const csvRows = [];
+    const headers = ["Group Name", "Student Name", "Total Students", "Completion"];
+    csvRows.push(headers.join(","));
+
+    students.forEach(student => {
+      const values = [groupName, student.name, students.length, `${(students.length / 10) * 100}%`];
+      csvRows.push(values.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    saveAs(blob, 'group_details.csv');
+  };
+
   return (
     <Modal open={open} onClose={handleClose}>
       <StyledBox>
@@ -125,6 +141,9 @@ const ShowGroupModal = ({ open, handleClose, groupId, groupName }) => {
             </ListItem>
           ))}
         </List>
+        <StyledButton variant="contained" onClick={exportToCSV}>
+          Export CSV
+        </StyledButton>
         <StyledButton variant="contained" onClick={handleClose}>
           Close
         </StyledButton>

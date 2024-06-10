@@ -46,11 +46,7 @@ const useSubjectsTableData = (handleEditClick, enqueueSnackbar) => {
     }));
 
     setRows(subjectsRows);
-  }, []);
-
-  useEffect(() => {
-    fetchSubjects();
-  }, [fetchSubjects]);
+  }, [handleEditClick]);
 
   const handleDeleteSubject = async (subjectId) => {
     try {
@@ -77,6 +73,10 @@ const useSubjectsTableData = (handleEditClick, enqueueSnackbar) => {
     }
   };
 
+  useEffect(() => {
+    fetchSubjects();
+  }, [fetchSubjects]);
+
   return {
     columns: [
       { name: "name", align: "left" },
@@ -85,6 +85,7 @@ const useSubjectsTableData = (handleEditClick, enqueueSnackbar) => {
     ],
     rows,
     fetchSubjects,
+    subjectsList,
   };
 };
 
@@ -98,7 +99,7 @@ const SubjectsTable = () => {
     setEditSubjectModalOpen(true);
   };
 
-  const { columns, rows, fetchSubjects } = useSubjectsTableData(handleEditClick, enqueueSnackbar);
+  const { columns, rows, fetchSubjects, subjectsList } = useSubjectsTableData(handleEditClick, enqueueSnackbar);
   const [addSubjectModalOpen, setAddSubjectModalOpen] = useState(false);
 
   const handleAddSubject = () => {
