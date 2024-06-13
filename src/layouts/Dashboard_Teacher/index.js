@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+// src/layouts/Dashboard_Teacher/index.js
+
+import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import db from "../../firebase";
 import Grid from "@mui/material/Grid";
-import { Card, LinearProgress, Stack } from "@mui/material";
+import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Card } from "@mui/material";
 
 // Vision UI Dashboard React components
 import VuiBox from "components/VuiBox";
@@ -29,20 +31,13 @@ import { IoIosRocket } from "react-icons/io";
 import { IoGlobe } from "react-icons/io5";
 import { IoBuild } from "react-icons/io5";
 import { IoWallet } from "react-icons/io5";
-import { IoDocumentText } from "react-icons/io5";
-import { FaShoppingCart } from "react-icons/fa";
 import StudentIcon from "assets/icons/Student.png";
 import TeacherIcon from "assets/icons/teacher.png";
-import SubjectIcon from "assets/icons/Subject.png";
 import linearGradient from "../../assets/theme/functions/linearGradient";
 import VuiProgress from "../../components/VuiProgress";
-// Data
-import LineChart from "examples/Charts/LineCharts/LineChart";
 import BarChart from "examples/Charts/BarCharts/BarChart";
-import { lineChartDataDashboard } from "layouts/Dashboard_Teacher/data/lineChartData";
-import { lineChartOptionsDashboard } from "layouts/Dashboard_Teacher/data/lineChartOptions";
 import { barChartDataDashboard } from "layouts/Dashboard_Teacher/data/barChartData";
-import { barChartOptionsDashboard } from "layouts/Dashboard_Teacher/data/barChartOptions";
+import {barChartOptionsDashboard} from "./data/barChartOptions";
 
 function Dashboard() {
   const { gradients } = colors;
@@ -52,9 +47,12 @@ function Dashboard() {
   const [studentCount, setStudentCount] = useState(0);
   const [subjectCount, setSubjectCount] = useState(0); // State for subject count
   const [userName, setUserName] = useState("");
-  const [groupCount, setGroupCount] = useState(0); // State for group count
   const [teacherSubject, setTeacherSubject] = useState(""); // State for teacher subject
   const [groups, setGroups] = useState([]); // State for groups taught by the teacher
+  const [upcomingLessons, setUpcomingLessons] = useState([]);
+  const [groupNames, setGroupNames] = useState({});
+  const [roomNames, setRoomNames] = useState({});
+  const [averageAttendance, setAverageAttendance] = useState({});
 
   useEffect(() => {
     const fetchTeachers = async () => {
@@ -85,7 +83,27 @@ function Dashboard() {
         const groupsSnapshot = await getDocs(q);
         const groupsList = groupsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setGroups(groupsList);
+
+        // Store group names in an object for easy lookup
+        const groupNamesObj = {};
+        groupsSnapshot.docs.forEach((doc) => {
+          groupNamesObj[doc.id] = doc.data().name;
+        });
+        setGroupNames(groupNamesObj);
       }
+    };
+
+    const fetchRooms = async () => {
+      const roomsCollection = collection(db, "rooms");
+      const roomsSnapshot = await getDocs(roomsCollection);
+      const roomsList = roomsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      // Store room names in an object for easy lookup
+      const roomNamesObj = {};
+      roomsSnapshot.docs.forEach((doc) => {
+        roomNamesObj[doc.id] = doc.data().name;
+      });
+      setRoomNames(roomNamesObj);
     };
 
     const fetchUserData = async () => {
@@ -118,10 +136,50 @@ function Dashboard() {
       }
     };
 
+    const fetchUpcomingLessons = async () => {
+      const classesCollection = collection(db, "classes");
+      const q = query(classesCollection, where("startTime", ">=", new Date().toISOString()));
+      const querySnapshot = await getDocs(q);
+      const classesList = querySnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((lesson) => new Date(lesson.endTime) >= new Date());
+      setUpcomingLessons(classesList);
+    };
+
+    const fetchAverageAttendance = async () => {
+      const attendanceCollection = collection(db, "attendance");
+      const attendanceSnapshot = await getDocs(attendanceCollection);
+      const attendanceList = attendanceSnapshot.docs.map((doc) => doc.data());
+
+      // Calculate average attendance per group
+      const attendanceSum = {};
+      const attendanceCount = {};
+
+      attendanceList.forEach((record) => {
+        const { groupId, present } = record;
+        if (!attendanceSum[groupId]) {
+          attendanceSum[groupId] = 0;
+          attendanceCount[groupId] = 0;
+        }
+        attendanceSum[groupId] += present;
+        attendanceCount[groupId] += 1;
+      });
+
+      const averageAttendanceObj = {};
+      Object.keys(attendanceSum).forEach((groupId) => {
+        averageAttendanceObj[groupId] = attendanceSum[groupId] / attendanceCount[groupId];
+      });
+
+      setAverageAttendance(averageAttendanceObj);
+    };
+
     fetchTeachers();
     fetchStudents();
     fetchSubjects();
     fetchUserData();
+    fetchRooms();
+    fetchUpcomingLessons();
+    fetchAverageAttendance();
   }, []);
 
   return (
@@ -155,11 +213,118 @@ function Dashboard() {
             </Grid>
           </Grid>
         </VuiBox>
+        <VuiBox mb={3}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card>
+                <VuiBox
+                  mb="24px"
+                  height="220px"
+                  sx={{
+                    background: linearGradient(
+                      cardContent.main,
+                      cardContent.state,
+                      cardContent.deg
+                    ),
+                    borderRadius: "20px",
+                  }}
+                >
+                  <BarChart
+                    barChartData={barChartDataDashboard}
+                    barChartOptions={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scales: {
+                        x: {
+                          beginAtZero: true,
+                        },
+                        y: {
+                          beginAtZero: true,
+                        },
+                      },
+                      plugins: {
+                        legend: {
+                          display: true,
+                          position: 'top',
+                        },
+                        title: {
+                          display: true,
+                          text: 'Average Attendance',
+                        },
+                      },
+                    }}
+                  />
+                </VuiBox>
+                <VuiTypography variant="lg" color="white" fontWeight="bold" mb="5px">
+                  Active Users
+                </VuiTypography>
+                <VuiBox display="flex" alignItems="center" mb="40px">
+                  <VuiTypography variant="button" color="success" fontWeight="bold">
+                    (+23){" "}
+                    <VuiTypography variant="button" color="text" fontWeight="regular">
+                      than last week
+                    </VuiTypography>
+                  </VuiTypography>
+                </VuiBox>
+                <Grid container spacing="50px">
+                  <Grid item xs={6} md={3} lg={3}>
+                    <VuiTypography color="white" variant="lg" fontWeight="bold" mb="8px">
+                      Средняя посещаемость групп
+                    </VuiTypography>
+                    {Object.keys(averageAttendance).map((groupId) => (
+                      <VuiTypography key={groupId} color="text" variant="button" fontWeight="medium">
+                        {groupNames[groupId]}: {averageAttendance[groupId].toFixed(2)}
+                      </VuiTypography>
+                    ))}
+                  </Grid>
+                </Grid>
+              </Card>
+            </Grid>
+          </Grid>
+        </VuiBox>
         <VuiBox py={3}>
           <VuiBox mb={3}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <WelcomeMark userName={userName} />
+              </Grid>
+            </Grid>
+          </VuiBox>
+          <VuiBox mb={3}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Group</TableCell>
+                        <TableCell>Room</TableCell>
+                        <TableCell>Subject</TableCell>
+                        <TableCell>Start Time</TableCell>
+                        <TableCell>End Time</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {upcomingLessons.length > 0 ? (
+                        upcomingLessons.map((lesson) => (
+                          <TableRow key={lesson.id}>
+                            <TableCell>{groupNames[lesson.groupId] || lesson.groupId}</TableCell>
+                            <TableCell>{roomNames[lesson.roomId] || lesson.roomId}</TableCell>
+                            <TableCell>{lesson.subject}</TableCell>
+                            <TableCell>{new Date(lesson.startTime).toLocaleString()}</TableCell>
+                            <TableCell>{new Date(lesson.endTime).toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={5} align="center">
+                            No upcoming lessons
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </Grid>
             </Grid>
           </VuiBox>

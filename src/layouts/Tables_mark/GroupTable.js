@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import db from "../../firebase";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Modal, Box } from "@mui/material";
 import VuiBox from "components/VuiBox";
@@ -11,14 +11,35 @@ const GroupTable = () => {
   const [selectedGroup, setSelectedGroup] = useState(null);
 
   useEffect(() => {
-    const fetchGroups = async () => {
-      const groupsCollection = collection(db, "groups");
-      const groupsSnapshot = await getDocs(groupsCollection);
-      const groupsList = groupsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setGroups(groupsList);
+    const fetchGroups = async (course) => {
+      if (course) {
+        const groupsCollection = collection(db, "groups");
+        const q = query(groupsCollection, where("course", "==", course));
+        const groupsSnapshot = await getDocs(q);
+        const groupsList = groupsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setGroups(groupsList);
+      }
     };
 
-    fetchGroups();
+    const fetchTeacherData = async () => {
+      const userEmail = localStorage.getItem("userEmail");
+      if (userEmail) {
+        const usersCollection = collection(db, "users");
+        const q = query(usersCollection, where("email", "==", userEmail));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const userData = querySnapshot.docs[0].data();
+          const course = userData.course;
+          fetchGroups(course);
+        } else {
+          console.error("No user found with the provided email.");
+        }
+      } else {
+        console.error("No user email found in localStorage.");
+      }
+    };
+
+    fetchTeacherData();
   }, []);
 
   const handleOpen = (groupId) => setSelectedGroup(groupId);
