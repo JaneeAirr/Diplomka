@@ -1,5 +1,3 @@
-// src/layouts/Dashboard_Teacher/index.js
-
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import db from "../../firebase";
@@ -37,7 +35,7 @@ import linearGradient from "../../assets/theme/functions/linearGradient";
 import VuiProgress from "../../components/VuiProgress";
 import BarChart from "examples/Charts/BarCharts/BarChart";
 import { barChartDataDashboard } from "layouts/Dashboard_Teacher/data/barChartData";
-import {barChartOptionsDashboard} from "./data/barChartOptions";
+import { barChartOptionsDashboard } from "layouts/Dashboard_Teacher/data/barChartOptions";
 
 function Dashboard() {
   const { gradients } = colors;
@@ -231,28 +229,7 @@ function Dashboard() {
                 >
                   <BarChart
                     barChartData={barChartDataDashboard}
-                    barChartOptions={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      scales: {
-                        x: {
-                          beginAtZero: true,
-                        },
-                        y: {
-                          beginAtZero: true,
-                        },
-                      },
-                      plugins: {
-                        legend: {
-                          display: true,
-                          position: 'top',
-                        },
-                        title: {
-                          display: true,
-                          text: 'Average Attendance',
-                        },
-                      },
-                    }}
+                    barChartOptions={barChartOptionsDashboard}
                   />
                 </VuiBox>
                 <VuiTypography variant="lg" color="white" fontWeight="bold" mb="5px">

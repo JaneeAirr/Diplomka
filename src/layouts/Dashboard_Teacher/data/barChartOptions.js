@@ -27,16 +27,12 @@ export const barChartOptionsDashboard = {
       fontSize: "10px",
       fontFamily: "Plus Jakarta Display",
     },
-    onDatasetHover: {
-      style: {
-        fontSize: "10px",
-        fontFamily: "Plus Jakarta Display",
-      },
-    },
     theme: "dark",
   },
   xaxis: {
-    categories: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    categories: [
+      "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ],
     show: false,
     labels: {
       show: false,
@@ -53,22 +49,40 @@ export const barChartOptionsDashboard = {
     },
   },
   yaxis: {
-    show: true,
-    color: "#fff",
+    show: false,
     labels: {
-      show: true,
+      show: false,
       style: {
         colors: "#fff",
         fontSize: "10px",
-        fontFamily: "Plus Jakarta Display",
       },
     },
   },
   grid: {
     show: false,
+    strokeDashArray: 5,
+    yaxis: {
+      lines: {
+        show: false,
+      },
+    },
+    xaxis: {
+      lines: {
+        show: false,
+      },
+    },
   },
   fill: {
-    colors: "#fff",
+    type: "gradient",
+    gradient: {
+      shade: "dark",
+      gradientToColors: ["#2152ff"],
+      shadeIntensity: 1,
+      type: "vertical",
+      opacityFrom: 0.8,
+      opacityTo: 0,
+      stops: [0, 100],
+    },
   },
   dataLabels: {
     enabled: false,
@@ -79,16 +93,5 @@ export const barChartOptionsDashboard = {
       columnWidth: "12px",
     },
   },
-  responsive: [
-    {
-      breakpoint: 768,
-      options: {
-        plotOptions: {
-          bar: {
-            borderRadius: 0,
-          },
-        },
-      },
-    },
-  ],
 };
+
